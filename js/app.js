@@ -76,16 +76,16 @@ const App = {
         {
             name: 'Hatfield U13s',
             players: [
-                { name: 'Sophie M', number: '1' },
-                { name: 'Emily R', number: '2' },
-                { name: 'Grace T', number: '3' },
-                { name: 'Olivia K', number: '4' },
-                { name: 'Chloe B', number: '5' },
-                { name: 'Mia W', number: '6' },
-                { name: 'Ella P', number: '7' },
-                { name: 'Ava H', number: '8' },
-                { name: 'Lily D', number: '9' },
-                { name: 'Isla F', number: '10' },
+                { name: 'Amber', number: '1' },
+                { name: 'Daisy', number: '2' },
+                { name: 'Alexa', number: '3' },
+                { name: 'Poppy', number: '4' },
+                { name: 'Aliska', number: '5' },
+                { name: 'Gracie', number: '6' },
+                { name: 'Ellam', number: '7' },
+                { name: 'Immy', number: '8' },
+                { name: 'Maisy', number: '9' },
+                { name: 'Bella', number: '10' },
             ]
         },
         {
