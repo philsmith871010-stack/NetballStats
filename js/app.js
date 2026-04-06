@@ -804,9 +804,6 @@ const App = {
                 `<button class="action-btn-primary action-goal disabled" disabled><span class="action-icon">&#9917;</span> Goal</button>` +
                 `<button class="action-btn-primary action-miss disabled" disabled><span class="action-icon">&#10060;</span> Miss</button>`;
         }
-            .map(a => `<button class="action-btn-primary ${a.css}" onclick="App.recordAction('${a.key}')">
-                <span class="action-icon">${a.icon}</span> ${a.label}
-            </button>`).join('');
 
         secondaryEl.innerHTML = secondary
             .map(a => `<button class="action-btn-secondary ${a.css}" onclick="App.recordAction('${a.key}')">
