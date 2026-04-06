@@ -54,11 +54,46 @@ const App = {
         { key: 'penalty_obstruction', label: 'Obstruct', icon: '&#128683;', css: 'action-negative', positions: null },
     ],
 
+    // ---- Sample Data ----
+    SAMPLE_TEAMS: [
+        {
+            name: 'Thunder',
+            players: [
+                { name: 'Sophie M', number: '1' },
+                { name: 'Emily R', number: '2' },
+                { name: 'Grace T', number: '3' },
+                { name: 'Olivia K', number: '4' },
+                { name: 'Chloe B', number: '5' },
+                { name: 'Mia W', number: '6' },
+                { name: 'Ella P', number: '7' },
+                { name: 'Ava H', number: '8' },
+                { name: 'Lily D', number: '9' },
+                { name: 'Isla F', number: '10' },
+            ]
+        },
+        {
+            name: 'Lightning',
+            players: [
+                { name: 'Ruby S', number: '1' },
+                { name: 'Amelia J', number: '2' },
+                { name: 'Harper L', number: '3' },
+                { name: 'Willow C', number: '4' },
+                { name: 'Zoe N', number: '5' },
+                { name: 'Sienna A', number: '6' },
+                { name: 'Poppy G', number: '7' },
+                { name: 'Ivy E', number: '8' },
+                { name: 'Luna Q', number: '9' },
+                { name: 'Freya V', number: '10' },
+            ]
+        },
+    ],
+
     // ==========================================
     // INIT
     // ==========================================
     init() {
         this.loadData();
+        this.seedSampleDataIfEmpty();
         this.showView('view-home');
         document.getElementById('setup-date').value = new Date().toISOString().split('T')[0];
         // Pre-populate 10 empty player rows on setup
@@ -76,6 +111,13 @@ const App = {
             if (matchesJson) this.matches = JSON.parse(matchesJson);
         } catch (e) {
             console.error('Failed to load data:', e);
+        }
+    },
+
+    seedSampleDataIfEmpty() {
+        if (this.teams.length === 0) {
+            this.teams = JSON.parse(JSON.stringify(this.SAMPLE_TEAMS));
+            this.saveTeams();
         }
     },
 
@@ -110,6 +152,16 @@ const App = {
                 this.populateSavedTeamDropdown();
                 if (!document.getElementById('setup-team-players').children.length) {
                     this.populatePlayerRows('setup-team-players', 10);
+                }
+                // Auto-load first saved team and set default opposition for quick testing
+                if (this.teams.length > 0 && !document.getElementById('setup-team-name').value) {
+                    document.getElementById('setup-saved-team').value = '0';
+                    this.loadSavedTeam();
+                    // Set opposition to second team if available, otherwise a default
+                    if (!document.getElementById('setup-opposition').value) {
+                        document.getElementById('setup-opposition').value =
+                            this.teams.length > 1 ? this.teams[1].name : 'Vipers';
+                    }
                 }
                 break;
             case 'view-history':
