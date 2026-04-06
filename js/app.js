@@ -74,7 +74,7 @@ const App = {
     // ---- Sample Data ----
     SAMPLE_TEAMS: [
         {
-            name: 'Thunder',
+            name: 'Hatfield U13s',
             players: [
                 { name: 'Sophie M', number: '1' },
                 { name: 'Emily R', number: '2' },
@@ -696,6 +696,18 @@ const App = {
             if (this.match.quarter >= 4) {
                 document.getElementById('btn-quarter').textContent = 'Full Time';
             }
+        });
+    },
+
+    abandonMatch() {
+        this.showConfirm('Abandon this match? Data will be lost.', confirmed => {
+            if (!confirmed) return;
+            this.pauseTimer();
+            this.match = null;
+            this.selectedMatchPlayer = null;
+            if (this.useFirebase) DB.clearLiveMatch().catch(console.error);
+            this.showView('view-home');
+            this.toast('Match abandoned', 'success');
         });
     },
 

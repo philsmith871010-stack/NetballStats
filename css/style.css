@@ -3,11 +3,11 @@
    ======================================== */
 
 :root {
-    --primary: #6C2BD9;
-    --primary-light: #8B5CF6;
-    --primary-dark: #5B21B6;
-    --accent: #F59E0B;
-    --accent-light: #FCD34D;
+    --primary: #5B2D8E;
+    --primary-light: #7B4FAE;
+    --primary-dark: #462170;
+    --accent: #C4A265;
+    --accent-light: #D4BA85;
     --success: #10B981;
     --danger: #EF4444;
     --warning: #F59E0B;
@@ -173,6 +173,12 @@ html:has(#view-match.active) body {
 .btn-whatsapp {
     background: #25D366 !important;
     color: #fff !important;
+}
+.btn-abandon {
+    background: transparent !important;
+    color: var(--text-dim) !important;
+    font-size: 1rem !important;
+    opacity: 0.6;
 }
 .btn-whatsapp-share {
     display: inline-flex;

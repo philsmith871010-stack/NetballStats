@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#6C2BD9"/>
-  <circle cx="256" cy="220" r="90" fill="none" stroke="#FCD34D" stroke-width="16"/>
-  <line x1="256" y1="130" x2="256" y2="310" stroke="#FCD34D" stroke-width="8"/>
-  <line x1="166" y1="220" x2="346" y2="220" stroke="#FCD34D" stroke-width="8"/>
-  <text x="256" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-weight="900" font-size="80" fill="#fff">STATS</text>
+  <rect width="512" height="512" rx="96" fill="#5B2D8E"/>
+  <circle cx="256" cy="200" r="85" fill="none" stroke="#C4A265" stroke-width="14"/>
+  <line x1="256" y1="115" x2="256" y2="285" stroke="#C4A265" stroke-width="7"/>
+  <line x1="171" y1="200" x2="341" y2="200" stroke="#C4A265" stroke-width="7"/>
+  <text x="256" y="380" text-anchor="middle" font-family="Arial,sans-serif" font-weight="800" font-size="56" fill="#fff">Hatfield</text>
+  <text x="256" y="440" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="42" fill="#C4A265">U13s</text>
 </svg>

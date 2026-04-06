@@ -6,11 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#6C2BD9">
+    <meta name="theme-color" content="#5B2D8E">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="icons/icon.svg">
-    <title>NetballStats - Live Match Tracker</title>
+    <title>Hatfield NC U13s - Live Stats</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -18,8 +18,8 @@
 <!-- ======== HOME ======== -->
 <div id="view-home" class="view active">
     <header class="app-header">
-        <h1>NetballStats</h1>
-        <p class="subtitle">Live Match Tracker</p>
+        <h1>Hatfield NC</h1>
+        <p class="subtitle">U13s Purple - Live Stats</p>
     </header>
     <div class="home-actions">
         <button class="btn btn-primary btn-large" onclick="App.showView('view-setup-team')">
@@ -258,6 +258,7 @@
         <button class="btn btn-tool" onclick="App.showSubstitution()">Subs</button>
         <button class="btn btn-tool" id="btn-quarter" onclick="App.nextQuarter()">Next Qtr</button>
         <button class="btn btn-tool btn-whatsapp" onclick="App.shareLiveLink()">Share</button>
+        <button class="btn btn-tool btn-abandon" onclick="App.abandonMatch()">&#10005;</button>
     </div>
 
     <!-- Substitution Panel (overlay) -->
