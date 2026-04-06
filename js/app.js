@@ -449,8 +449,7 @@ const App = {
             if (i < this.setupPlayers.length) {
                 const player = this.setupPlayers[i];
                 this.lineup[pos] = player;
-                const numLabel = player.number ? `#${player.number} ` : '';
-                document.getElementById('lineup-' + pos).textContent = numLabel + player.name;
+                document.getElementById('lineup-' + pos).textContent = player.name;
                 document.querySelector(`.position-slot[data-pos="${pos}"]`).classList.add('assigned');
             } else {
                 document.getElementById('lineup-' + pos).textContent = 'Tap to assign';
@@ -480,11 +479,10 @@ const App = {
 
         grid.innerHTML = this.setupPlayers.map(player => {
             const taken = assignedIds.has(player.id) && !(this.lineup[pos] && this.lineup[pos].id === player.id);
-            const numLabel = player.number ? `#${player.number} ` : '';
             return `<button class="picker-player ${taken ? 'taken' : ''}"
                 onclick="${taken ? '' : `App.assignPlayer(${player.id})`}"
                 ${taken ? 'disabled' : ''}>
-                ${numLabel}${player.name}
+                ${player.name}
             </button>`;
         }).join('');
 
@@ -505,8 +503,7 @@ const App = {
         });
 
         this.lineup[this.selectedPosition] = player;
-        const numLabel = player.number ? `#${player.number} ` : '';
-        document.getElementById('lineup-' + this.selectedPosition).textContent = numLabel + player.name;
+        document.getElementById('lineup-' + this.selectedPosition).textContent = player.name;
         document.querySelector(`.position-slot[data-pos="${this.selectedPosition}"]`).classList.add('assigned');
 
         this.closePlayerPicker();
@@ -708,11 +705,10 @@ const App = {
             }
             const stats = this.match.playerStats[player.id] || {};
             const statLine = this.getPlayerStatLine(stats, pos);
-            const numLabel = player.number ? `#${player.number}` : '';
             slot.dataset.playerId = player.id;
             slot.innerHTML = `
                 <span class="cs-pos">${pos}</span>
-                <span class="cs-name">${numLabel} ${player.name}</span>
+                <span class="cs-name">${player.name}</span>
                 <span class="cs-stats">${statLine}</span>
             `;
             // Re-apply selected state
@@ -782,14 +778,12 @@ const App = {
         const secondaryEl = document.getElementById('action-secondary');
 
         if (!pos) {
-            // No player selected - show greyed out
-            const filtered = actions.slice(0, 6); // show first 6 as placeholder
-            primaryEl.innerHTML = filtered.filter(a => this.PRIMARY_ACTIONS.includes(a.key))
-                .map(a => `<button class="action-btn-primary ${a.css} disabled" disabled>
-                    <span class="action-icon">${a.icon}</span> ${a.label}
-                </button>`).join('');
-            secondaryEl.innerHTML = filtered.filter(a => !this.PRIMARY_ACTIONS.includes(a.key))
-                .map(a => `<button class="action-btn-secondary ${a.css} disabled" disabled>
+            // No player selected - show greyed out placeholders (always 2 primary + 4 secondary)
+            primaryEl.innerHTML =
+                `<button class="action-btn-primary action-goal disabled" disabled><span class="action-icon">&#9917;</span> Goal</button>` +
+                `<button class="action-btn-primary action-miss disabled" disabled><span class="action-icon">&#10060;</span> Miss</button>`;
+            secondaryEl.innerHTML = actions.filter(a => !this.PRIMARY_ACTIONS.includes(a.key)).slice(0, 4)
+                .map(a => `<button class="action-btn-secondary disabled" disabled>
                     <span class="action-icon">${a.icon}</span> ${a.label}
                 </button>`).join('');
             return;
@@ -799,7 +793,17 @@ const App = {
         const primary = available.filter(a => this.PRIMARY_ACTIONS.includes(a.key));
         const secondary = available.filter(a => !this.PRIMARY_ACTIONS.includes(a.key));
 
-        primaryEl.innerHTML = primary
+        // Always show 2 primary slots (empty/disabled if not a shooter)
+        if (primary.length > 0) {
+            primaryEl.innerHTML = primary
+                .map(a => `<button class="action-btn-primary ${a.css}" onclick="App.recordAction('${a.key}')">
+                    <span class="action-icon">${a.icon}</span> ${a.label}
+                </button>`).join('');
+        } else {
+            primaryEl.innerHTML =
+                `<button class="action-btn-primary action-goal disabled" disabled><span class="action-icon">&#9917;</span> Goal</button>` +
+                `<button class="action-btn-primary action-miss disabled" disabled><span class="action-icon">&#10060;</span> Miss</button>`;
+        }
             .map(a => `<button class="action-btn-primary ${a.css}" onclick="App.recordAction('${a.key}')">
                 <span class="action-icon">${a.icon}</span> ${a.label}
             </button>`).join('');
