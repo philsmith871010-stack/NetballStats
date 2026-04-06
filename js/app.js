@@ -86,6 +86,7 @@ const App = {
                 { name: 'Immy', number: '8' },
                 { name: 'Maisy', number: '9' },
                 { name: 'Bella', number: '10' },
+                { name: 'Martha', number: '11' },
             ]
         },
         {
@@ -160,55 +161,121 @@ const App = {
     createSampleMatches() {
         const team = this.SAMPLE_TEAMS[0];
         const players = team.players.map((p, i) => ({ ...p, id: i }));
+        // Players: 0=Amber(GS), 1=Daisy(GA), 2=Alexa(WA), 3=Poppy(C), 4=Aliska(WD), 5=Gracie(GD), 6=Ellam(GK), 7=Immy, 8=Maisy, 9=Bella
 
-        const opponents = ['Lightning', 'Storm', 'Vipers'];
-        const venues = ['Central Courts', 'Hatfield Leisure Centre', 'Welwyn Arena'];
-        const comps = ['Winter League', 'Winter League', 'County Cup'];
-        const scores = [
-            { home: 30, away: 25, qs: [{home:8,away:7},{home:7,away:5},{home:9,away:8},{home:6,away:5}] },
-            { home: 22, away: 28, qs: [{home:5,away:8},{home:6,away:7},{home:4,away:6},{home:7,away:7}] },
-            { home: 35, away: 19, qs: [{home:10,away:5},{home:8,away:6},{home:9,away:4},{home:8,away:4}] },
-        ];
-        const statSets = [
-            { 0: {goal:18,miss:5,rebound:3}, 1: {goal:12,miss:4,rebound:2,intercept:1}, 2: {centre_pass:8,feed:6,assist:4,turnover:2}, 3: {centre_pass:14,intercept:3,turnover:1}, 4: {intercept:5,deflection:3,turnover:1}, 5: {intercept:4,deflection:2,rebound:3,turnover:1}, 6: {intercept:3,deflection:4,rebound:5} },
-            { 0: {goal:12,miss:6,rebound:2}, 1: {goal:10,miss:5,rebound:1}, 2: {centre_pass:6,feed:4,turnover:3}, 3: {centre_pass:10,intercept:2,turnover:2}, 4: {intercept:3,deflection:2,turnover:2}, 5: {intercept:2,deflection:1,rebound:2,turnover:2}, 6: {intercept:2,deflection:2,rebound:3} },
-            { 0: {goal:22,miss:3,rebound:4}, 1: {goal:13,miss:2,rebound:3,intercept:2}, 2: {centre_pass:10,feed:8,assist:6,turnover:1}, 3: {centre_pass:16,intercept:5,turnover:0}, 4: {intercept:7,deflection:4,turnover:0}, 5: {intercept:5,deflection:3,rebound:4,turnover:0}, 6: {intercept:4,deflection:5,rebound:6} },
+        const matches = [
+            // Match 1: Opening day win
+            { opp: 'St Albans Stingers', venue: 'Hatfield Leisure Centre', comp: 'Winter League R1', daysAgo: 56,
+              home: 28, away: 22, qs: [{home:7,away:6},{home:8,away:5},{home:6,away:7},{home:7,away:4}],
+              stats: {
+                0:{goal:16,miss:6,rebound:2}, 1:{goal:12,miss:4,rebound:1},
+                2:{centre_pass:6,feed:5,assist:3,turnover:2}, 3:{centre_pass:12,intercept:2,turnover:1},
+                4:{intercept:4,deflection:2,turnover:1}, 5:{intercept:3,deflection:2,rebound:3,turnover:1},
+                6:{intercept:2,deflection:3,rebound:4}
+              }},
+            // Match 2: Tight loss
+            { opp: 'Welwyn Warriors', venue: 'Gosling Sports Park', comp: 'Winter League R2', daysAgo: 49,
+              home: 19, away: 23, qs: [{home:5,away:6},{home:4,away:7},{home:6,away:5},{home:4,away:5}],
+              stats: {
+                0:{goal:10,miss:7,rebound:1}, 1:{goal:9,miss:5,rebound:1},
+                2:{centre_pass:5,feed:3,turnover:4}, 3:{centre_pass:9,intercept:1,turnover:3},
+                4:{intercept:2,deflection:1,turnover:2}, 5:{intercept:2,deflection:1,rebound:2,turnover:2},
+                6:{intercept:1,deflection:2,rebound:3}, 7:{intercept:1,turnover:1}
+              }},
+            // Match 3: County Cup - big win
+            { opp: 'Hertford Hawks', venue: 'Hertford Sports Village', comp: 'County Cup R1', daysAgo: 42,
+              home: 35, away: 18, qs: [{home:10,away:5},{home:9,away:4},{home:8,away:5},{home:8,away:4}],
+              stats: {
+                0:{goal:20,miss:4,rebound:3}, 1:{goal:15,miss:2,rebound:2,intercept:1},
+                2:{centre_pass:9,feed:8,assist:5,turnover:1}, 3:{centre_pass:15,intercept:4,turnover:0},
+                4:{intercept:6,deflection:4,turnover:0}, 5:{intercept:5,deflection:3,rebound:4,turnover:0},
+                6:{intercept:3,deflection:4,rebound:5}, 8:{feed:2,turnover:1}
+              }},
+            // Match 4: Close win, Immy starts at WA
+            { opp: 'Potters Bar Panthers', venue: 'Hatfield Leisure Centre', comp: 'Winter League R3', daysAgo: 35,
+              home: 25, away: 24, qs: [{home:6,away:7},{home:7,away:5},{home:5,away:6},{home:7,away:6}],
+              stats: {
+                0:{goal:14,miss:5,rebound:2}, 1:{goal:11,miss:4,rebound:1,intercept:1},
+                7:{centre_pass:7,feed:4,assist:2,turnover:2}, 3:{centre_pass:11,intercept:3,turnover:1},
+                4:{intercept:4,deflection:3,turnover:1}, 5:{intercept:3,deflection:2,rebound:2,turnover:1},
+                6:{intercept:2,deflection:3,rebound:4}, 2:{feed:2,assist:1,turnover:1}
+              }},
+            // Match 5: Tough away loss
+            { opp: 'Stevenage Storm', venue: 'Stevenage Leisure Centre', comp: 'Winter League R4', daysAgo: 28,
+              home: 20, away: 30, qs: [{home:4,away:8},{home:6,away:7},{home:5,away:8},{home:5,away:7}],
+              stats: {
+                0:{goal:11,miss:8,rebound:1}, 1:{goal:9,miss:6,rebound:1},
+                2:{centre_pass:5,feed:3,turnover:4}, 3:{centre_pass:8,intercept:1,turnover:3},
+                4:{intercept:2,deflection:1,turnover:3}, 5:{intercept:1,deflection:1,rebound:2,turnover:2},
+                6:{intercept:2,deflection:2,rebound:2}, 9:{intercept:1,turnover:1}
+              }},
+            // Match 6: Bounce back win
+            { opp: 'Hitchin Heat', venue: 'Hatfield Leisure Centre', comp: 'Winter League R5', daysAgo: 21,
+              home: 32, away: 21, qs: [{home:9,away:5},{home:7,away:6},{home:8,away:4},{home:8,away:6}],
+              stats: {
+                0:{goal:19,miss:4,rebound:3}, 1:{goal:13,miss:3,rebound:2,intercept:2},
+                2:{centre_pass:8,feed:7,assist:4,turnover:1}, 3:{centre_pass:14,intercept:4,turnover:1},
+                4:{intercept:5,deflection:3,turnover:0}, 5:{intercept:4,deflection:3,rebound:3,turnover:0},
+                6:{intercept:3,deflection:4,rebound:5}, 7:{feed:1,assist:1}, 8:{intercept:1}, 10:{turnover:1}
+              }},
+            // Match 7: County Cup Semi - nail biter win
+            { opp: 'Stevenage Storm', venue: 'Welwyn Arena', comp: 'County Cup Semi', daysAgo: 14,
+              home: 27, away: 26, qs: [{home:7,away:7},{home:6,away:7},{home:8,away:6},{home:6,away:6}],
+              stats: {
+                0:{goal:15,miss:5,rebound:2}, 1:{goal:12,miss:4,rebound:2,intercept:1},
+                2:{centre_pass:7,feed:6,assist:4,turnover:2}, 3:{centre_pass:13,intercept:3,turnover:1},
+                4:{intercept:5,deflection:4,turnover:1}, 5:{intercept:4,deflection:2,rebound:3,turnover:1},
+                6:{intercept:3,deflection:3,rebound:5}, 9:{feed:1,turnover:1}
+              }},
+            // Match 8: Last week - dominant win
+            { opp: 'Welwyn Warriors', venue: 'Hatfield Leisure Centre', comp: 'Winter League R6', daysAgo: 7,
+              home: 34, away: 20, qs: [{home:9,away:5},{home:8,away:5},{home:9,away:6},{home:8,away:4}],
+              stats: {
+                0:{goal:20,miss:3,rebound:4}, 1:{goal:14,miss:2,rebound:3,intercept:2},
+                2:{centre_pass:9,feed:8,assist:6,turnover:1}, 3:{centre_pass:16,intercept:5,turnover:0},
+                4:{intercept:6,deflection:5,turnover:0}, 5:{intercept:5,deflection:3,rebound:4,turnover:0},
+                6:{intercept:4,deflection:5,rebound:6}, 7:{feed:2,assist:1}, 8:{intercept:1,deflection:1}, 9:{intercept:1}, 10:{intercept:1,deflection:1}
+              }},
         ];
 
-        return opponents.map((opp, idx) => {
-            const daysAgo = (idx + 1) * 7;
+        return matches.map((m, idx) => {
             const d = new Date();
-            d.setDate(d.getDate() - daysAgo);
+            d.setDate(d.getDate() - m.daysAgo);
 
+            // Generate events
             const events = [];
-            let eid = 2000 + idx * 1000;
+            let eid = 5000 + idx * 500;
             const actionPool = [
                 {pid:0,action:'goal',pos:'GS',team:'home'}, {pid:1,action:'goal',pos:'GA',team:'home'},
-                {pid:0,action:'miss',pos:'GS',team:'home'}, {pid:3,action:'centre_pass',pos:'C',team:'home'},
-                {pid:4,action:'intercept',pos:'WD',team:'home'}, {pid:null,action:'opp_goal',pos:null,team:'away'},
-                {pid:5,action:'intercept',pos:'GD',team:'home'}, {pid:6,action:'rebound',pos:'GK',team:'home'},
+                {pid:0,action:'miss',pos:'GS',team:'home'}, {pid:1,action:'miss',pos:'GA',team:'home'},
+                {pid:3,action:'centre_pass',pos:'C',team:'home'}, {pid:4,action:'intercept',pos:'WD',team:'home'},
+                {pid:null,action:'opp_goal',pos:null,team:'away'}, {pid:5,action:'intercept',pos:'GD',team:'home'},
+                {pid:6,action:'rebound',pos:'GK',team:'home'}, {pid:2,action:'feed',pos:'WA',team:'home'},
+                {pid:4,action:'deflection',pos:'WD',team:'home'}, {pid:2,action:'turnover',pos:'WA',team:'home'},
             ];
             for (let q = 1; q <= 4; q++) {
                 events.push({id:eid++, quarter:q, time:'0:00', playerId:null, playerName:`Q${q} started`, position:null, action:'system', team:null});
-                for (let i = 0; i < 10; i++) {
+                for (let i = 0; i < 12; i++) {
                     const a = actionPool[Math.floor(Math.random() * actionPool.length)];
-                    events.push({id:eid++, quarter:q, time:`${Math.floor(i*1.5)}:${String(Math.floor(Math.random()*60)).padStart(2,'0')}`, playerId:a.pid, playerName:a.pid!==null?players[a.pid].name:opp, position:a.pos, action:a.action, team:a.team});
+                    const mins = Math.floor((i/12)*15);
+                    const secs = String(Math.floor(Math.random()*60)).padStart(2,'0');
+                    events.push({id:eid++, quarter:q, time:`${mins}:${secs}`, playerId:a.pid, playerName:a.pid!==null?players[a.pid].name:m.opp, position:a.pos, action:a.action, team:a.team});
                 }
             }
             events.push({id:eid++, quarter:4, time:'15:00', playerId:null, playerName:'Full time', position:null, action:'system', team:null});
 
             return {
-                id: Date.now() - daysAgo * 86400000,
+                id: Date.now() - m.daysAgo * 86400000 + idx,
                 date: d.toISOString().split('T')[0],
-                venue: venues[idx],
-                competition: comps[idx],
+                venue: m.venue,
+                competition: m.comp,
                 homeTeam: team.name,
-                awayTeam: opp,
-                homeScore: scores[idx].home,
-                awayScore: scores[idx].away,
-                quarterScores: scores[idx].qs,
+                awayTeam: m.opp,
+                homeScore: m.home,
+                awayScore: m.away,
+                quarterScores: m.qs,
                 players,
-                playerStats: statSets[idx],
+                playerStats: m.stats,
                 events,
                 trackingLevel: 'detailed',
                 quarterLength: 15,
