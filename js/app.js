@@ -152,9 +152,12 @@ const App = {
             this.teams = JSON.parse(JSON.stringify(this.SAMPLE_TEAMS));
             this.saveTeams();
         }
-        if (this.matches.length === 0) {
+        // Seed sample matches if we have fewer than 8 (the full sample set)
+        const seeded = localStorage.getItem('netballstats_seeded_v2');
+        if (!seeded || this.matches.length < 8) {
             this.matches = this.createSampleMatches();
             this.saveMatches();
+            localStorage.setItem('netballstats_seeded_v2', 'true');
         }
     },
 
