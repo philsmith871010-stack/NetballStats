@@ -113,7 +113,12 @@ const App = {
         this.useFirebase = await initFirebase();
         await this.loadData();
         this.seedSampleDataIfEmpty();
-        this.showView('view-home');
+
+        // Restore live match if browser was refreshed mid-game
+        if (!this.restoreMatchState()) {
+            this.showView('view-home');
+        }
+
         document.getElementById('setup-date').value = new Date().toISOString().split('T')[0];
         this.populatePlayerRows('setup-team-players', 10);
     },
@@ -673,6 +678,7 @@ const App = {
             this.pauseTimer();
             this.match = null;
             this.selectedMatchPlayer = null;
+            this.clearMatchState();
             if (this.useFirebase) DB.clearLiveMatch().catch(console.error);
             this.showView('view-home');
             this.toast('Match abandoned', 'success');
@@ -703,7 +709,8 @@ const App = {
         this.matches.unshift(saved);
         this.saveMatches();
 
-        // Clear live match for viewers
+        // Clear live match state
+        this.clearMatchState();
         if (this.useFirebase) {
             DB.clearLiveMatch().catch(console.error);
         }
@@ -899,11 +906,71 @@ const App = {
     },
 
     syncLive(lastEvent) {
-        if (!this.useFirebase || !this.match) return;
+        if (!this.match) return;
         this.match.lastEvent = lastEvent || '';
         this.match.timerSeconds = this.timerSeconds;
         this.match.status = 'live';
-        DB.saveLiveMatch(this.match).catch(e => console.error('Live sync error:', e));
+
+        // Always save locally so refresh doesn't lose data
+        this.saveMatchState();
+
+        if (this.useFirebase) {
+            DB.saveLiveMatch(this.match).catch(e => console.error('Live sync error:', e));
+        }
+    },
+
+    // Save/restore live match state for browser refresh survival
+    saveMatchState() {
+        if (!this.match) return;
+        const state = {
+            match: this.match,
+            timerSeconds: this.timerSeconds,
+            timerRunning: this.timerRunning,
+            trackingLevel: this.trackingLevel,
+        };
+        localStorage.setItem('netballstats_live_match', JSON.stringify(state));
+    },
+
+    clearMatchState() {
+        localStorage.removeItem('netballstats_live_match');
+    },
+
+    restoreMatchState() {
+        try {
+            const json = localStorage.getItem('netballstats_live_match');
+            if (!json) return false;
+            const state = JSON.parse(json);
+            if (!state.match || !state.match.id) return false;
+
+            this.match = state.match;
+            this.timerSeconds = state.timerSeconds || 0;
+            this.trackingLevel = state.trackingLevel || 'basic';
+
+            // Restore UI
+            document.getElementById('match-home-name').textContent = this.match.homeTeam;
+            document.getElementById('match-away-name').textContent = this.match.awayTeam;
+            this.updateScoreDisplay();
+            this.updateTimerDisplay();
+            this.updateQuarterDisplay();
+            this.renderCourtPlayers();
+            this.cancelPlayerSelection();
+
+            if (this.match.quarter >= 4) {
+                document.getElementById('btn-quarter').textContent = 'Full Time';
+            }
+
+            // Resume timer if it was running
+            if (state.timerRunning) {
+                this.startTimer();
+            }
+
+            this.showView('view-match');
+            this.showTicker('Match restored');
+            return true;
+        } catch (e) {
+            console.error('Failed to restore match:', e);
+            return false;
+        }
     },
 
     // ==========================================
