@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>NetballStats - Live Match Tracker</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="view-home" class="view active">
+    <header class="app-header">
+        <h1>NetballStats</h1>
+        <p class="subtitle">Live Match Tracker</p>
+    </header>
+    <div class="home-actions">
+        <button class="btn btn-primary btn-large" onclick="App.showView('view-setup-team')">
+            <span class="btn-icon">+</span> New Match
+        </button>
+        <button class="btn btn-secondary btn-large" onclick="App.showView('view-history')">
+            <span class="btn-icon">&#128203;</span> Match History
+        </button>
+        <button class="btn btn-secondary btn-large" onclick="App.showView('view-manage-teams')">
+            <span class="btn-icon">&#9881;</span> Manage Teams
+        </button>
+    </div>
+    <div class="home-footer"><p>Tap <strong>New Match</strong> to get started</p></div>
+</div>
+<p>Full app files are on branch claude/connect-netballstats-repo-e71td in SwimMotivator repo.</p>
+<script src="js/app.js"></script>
+</body>
+</html>
