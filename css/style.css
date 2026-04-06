@@ -40,6 +40,16 @@ body {
 .view { display: none; min-height: 100vh; }
 .view.active { display: flex; flex-direction: column; }
 
+/* Lock everything during live match */
+html:has(#view-match.active),
+html:has(#view-match.active) body {
+    height: 100%;
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+    touch-action: none;
+}
+
 /* ---- App Header (Home) ---- */
 .app-header {
     text-align: center;
@@ -426,6 +436,14 @@ hr {
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: auto;
 }
 
 /* ---- Scoreboard ---- */
