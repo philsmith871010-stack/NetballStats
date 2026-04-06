@@ -458,6 +458,73 @@
             margin-top: 0.2rem;
         }
 
+        /* ---- Match Detail Overlay ---- */
+        .detail-overlay {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 300;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .detail-panel {
+            min-height: 100%;
+        }
+        .detail-header {
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            z-index: 10;
+        }
+        .detail-back {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+        }
+        .detail-score-hero {
+            background: linear-gradient(135deg, var(--primary-deeper), var(--primary));
+            padding: 1.25rem 1rem;
+            text-align: center;
+        }
+        .detail-final-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.4);
+        }
+        .detail-final-score {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin: 0.25rem 0;
+        }
+        .detail-final-teams {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .detail-meta {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 0.25rem;
+        }
+        .detail-section {
+            padding: 0.75rem 1rem;
+        }
+        .detail-section-title {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-dim);
+            margin-bottom: 0.5rem;
+        }
+
         /* ---- Branding ---- */
         .branding {
             padding: 1.5rem;
@@ -529,6 +596,16 @@
 <div id="results-section" class="results-section">
     <div class="results-header">Previous Results</div>
     <div id="results-list" class="results-list"></div>
+</div>
+
+<!-- Match Detail Overlay -->
+<div id="match-detail" class="detail-overlay" style="display:none">
+    <div class="detail-panel">
+        <div class="detail-header">
+            <button class="detail-back" onclick="closeDetail()">&larr; Back</button>
+        </div>
+        <div id="detail-content"></div>
+    </div>
 </div>
 
 <div class="branding">Hatfield Netball Club - U13s Purple</div>
@@ -737,22 +814,23 @@
     });
 
     // Load previous match results
+    let allMatches = [];
+
     async function loadResults() {
         try {
             const snap = await getDocs(collection(db, 'matches'));
-            const matches = snap.docs.map(d => d.data());
-            matches.sort((a, b) => b.id - a.id);
+            allMatches = snap.docs.map(d => d.data());
+            allMatches.sort((a, b) => b.id - a.id);
 
             const listEl = document.getElementById('results-list');
             const sectionEl = document.getElementById('results-section');
 
-            if (!matches.length) {
+            if (!allMatches.length) {
                 sectionEl.style.display = 'none';
                 return;
             }
 
-            listEl.innerHTML = matches.map(m => {
-                // Shooting stats
+            listEl.innerHTML = allMatches.map((m, idx) => {
                 let goals = 0, misses = 0;
                 if (m.playerStats) {
                     Object.values(m.playerStats).forEach(s => {
@@ -762,11 +840,10 @@
                 }
                 const attempts = goals + misses;
                 const pct = attempts > 0 ? Math.round((goals / attempts) * 100) : 0;
-
                 const quarters = (m.quarterScores || [])
                     .map((qs, i) => `Q${i+1}: ${qs.home}-${qs.away}`).join(' | ');
 
-                return `<div class="result-card">
+                return `<div class="result-card" onclick="openDetail(${idx})" style="cursor:pointer">
                     <div class="result-top">
                         <span class="result-date">${m.date || ''}${m.venue ? ' — ' + m.venue : ''}</span>
                         ${m.competition ? `<span class="result-comp">${m.competition}</span>` : ''}
@@ -781,6 +858,96 @@
             console.warn('Could not load results:', e);
         }
     }
+
+    // Match detail view
+    window.openDetail = function(idx) {
+        const m = allMatches[idx];
+        if (!m) return;
+
+        // Shooting totals
+        let goals = 0, misses = 0;
+        if (m.playerStats) {
+            Object.values(m.playerStats).forEach(s => { goals += s.goal || 0; misses += s.miss || 0; });
+        }
+        const attempts = goals + misses;
+        const pct = attempts > 0 ? Math.round((goals / attempts) * 100) : 0;
+
+        let html = '';
+
+        // Score hero
+        html += `<div class="detail-score-hero">
+            <div class="detail-final-label">Full Time</div>
+            <div class="detail-final-score">${m.homeScore} - ${m.awayScore}</div>
+            <div class="detail-final-teams">${m.homeTeam} vs ${m.awayTeam}</div>
+            <div class="detail-meta">${m.date || ''}${m.venue ? ' | ' + m.venue : ''}${m.competition ? ' | ' + m.competition : ''}</div>
+        </div>`;
+
+        // Quarter scores
+        if (m.quarterScores) {
+            html += `<div class="quarter-strip">${m.quarterScores.map((qs, i) =>
+                `<div class="qs-card"><div class="qs-label">Q${i+1}</div><div class="qs-score">${qs.home} - ${qs.away}</div></div>`
+            ).join('')}</div>`;
+        }
+
+        // Team shooting
+        html += `<div class="detail-section">
+            <div class="detail-section-title">Team Stats</div>
+            <div class="stat-card"><span class="stat-name">Shooting</span>
+                <div class="stat-values">
+                    <div class="stat-val goals"><span class="num">${goals}</span><span class="label">Goals</span></div>
+                    <div class="stat-val"><span class="num">${attempts}</span><span class="label">Shots</span></div>
+                    <div class="stat-val shooting"><span class="num">${pct}%</span><span class="label">Accuracy</span></div>
+                </div>
+            </div>
+        </div>`;
+
+        // Player stats
+        if (m.players && m.playerStats) {
+            html += `<div class="detail-section"><div class="detail-section-title">Player Stats</div>`;
+            m.players.forEach(p => {
+                const s = m.playerStats[p.id] || {};
+                if (!Object.keys(s).length) return;
+                const pg = s.goal || 0, pm = s.miss || 0, pa = pg + pm;
+                const ppct = pa > 0 ? Math.round((pg/pa)*100) + '%' : '';
+
+                let vals = '';
+                if (pa > 0) vals += `<div class="stat-val goals"><span class="num">${pg}</span><span class="label">Goals</span></div>`;
+                if (ppct) vals += `<div class="stat-val shooting"><span class="num">${ppct}</span><span class="label">Shot%</span></div>`;
+                if (s.intercept) vals += `<div class="stat-val"><span class="num">${s.intercept}</span><span class="label">Int</span></div>`;
+                if (s.turnover) vals += `<div class="stat-val"><span class="num">${s.turnover}</span><span class="label">TO</span></div>`;
+                if (s.rebound) vals += `<div class="stat-val"><span class="num">${s.rebound}</span><span class="label">Reb</span></div>`;
+                if (s.centre_pass) vals += `<div class="stat-val"><span class="num">${s.centre_pass}</span><span class="label">CP</span></div>`;
+                if (s.feed) vals += `<div class="stat-val"><span class="num">${s.feed}</span><span class="label">Feed</span></div>`;
+                if (s.assist) vals += `<div class="stat-val"><span class="num">${s.assist}</span><span class="label">Ast</span></div>`;
+                if (s.deflection) vals += `<div class="stat-val"><span class="num">${s.deflection}</span><span class="label">Def</span></div>`;
+
+                html += `<div class="stat-card"><span class="stat-name">${p.name}</span><div class="stat-values">${vals}</div></div>`;
+            });
+            html += `</div>`;
+        }
+
+        // Event timeline
+        if (m.events && m.events.length) {
+            html += `<div class="detail-section"><div class="detail-section-title">Timeline</div><div class="feed-list">`;
+            m.events.forEach(e => {
+                const ev = getEventDisplay(e);
+                html += `<div class="feed-item ${ev.css}">
+                    <span class="feed-time">Q${e.quarter}</span>
+                    <span class="feed-icon">${ev.icon}</span>
+                    <span class="feed-text">${ev.text}</span>
+                    <span class="feed-time">${e.time || ''}</span>
+                </div>`;
+            });
+            html += `</div></div>`;
+        }
+
+        document.getElementById('detail-content').innerHTML = html;
+        document.getElementById('match-detail').style.display = '';
+    };
+
+    window.closeDetail = function() {
+        document.getElementById('match-detail').style.display = 'none';
+    };
 
     loadResults();
 </script>
