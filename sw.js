@@ -1,4 +1,4 @@
-const CACHE_NAME = 'netballstats-v10';
+const CACHE_NAME = 'netballstats-v11';
 const ASSETS = [
   './',
   './index.html',
@@ -7,7 +7,8 @@ const ASSETS = [
   './js/app.js',
   './js/firebase.js',
   './manifest.json',
-  './icons/icon.svg'
+  './icons/icon.svg',
+  './icons/hatfield.jpg'
 ];
 
 // Install - cache all assets

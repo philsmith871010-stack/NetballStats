@@ -51,9 +51,17 @@ html:has(#view-match.active) body {
 }
 
 /* ---- App Header (Home) ---- */
+.app-logo {
+    width: 90px;
+    height: auto;
+    margin-bottom: 0.5rem;
+    border-radius: 12px;
+    background: #fff;
+    padding: 6px;
+}
 .app-header {
     text-align: center;
-    padding: 3rem 1.5rem 1.5rem;
+    padding: 2rem 1.5rem 1.5rem;
     background: linear-gradient(135deg, var(--primary-dark), var(--primary));
     border-radius: 0 0 2rem 2rem;
 }

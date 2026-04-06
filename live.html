@@ -310,14 +310,25 @@
         .stat-val.shooting .num { color: var(--accent-light); }
 
         /* ---- No Match ---- */
+        .hero-logo {
+            width: 60px;
+            height: auto;
+            border-radius: 10px;
+            background: #fff;
+            padding: 4px;
+            margin-bottom: 0.4rem;
+        }
+        .no-match-logo {
+            width: 100px;
+            height: auto;
+            border-radius: 14px;
+            background: #fff;
+            padding: 8px;
+            margin-bottom: 1rem;
+        }
         .no-match {
             text-align: center;
-            padding: 5rem 1.5rem;
-        }
-        .no-match-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            opacity: 0.3;
+            padding: 4rem 1.5rem;
         }
         .no-match h2 {
             color: var(--text-muted);
@@ -538,14 +549,15 @@
 <body>
 
 <div id="no-match" class="no-match">
-    <div class="no-match-icon">&#127944;</div>
-    <h2>No live match</h2>
+    <img src="icons/hatfield.jpg" alt="Hatfield NC" class="no-match-logo">
+    <h2>Hatfield NC U13s</h2>
     <p class="waiting-dots">Waiting for a match to start</p>
 </div>
 
 <div id="match-view" style="display:none">
     <!-- Hero Scoreboard -->
     <div class="hero">
+        <img src="icons/hatfield.jpg" alt="Hatfield NC" class="hero-logo">
         <div class="live-badge"><span class="dot"></span> Live</div>
         <div class="teams-row">
             <span class="team-name" id="lv-home-name">Home</span>
@@ -608,7 +620,10 @@
     </div>
 </div>
 
-<div class="branding">Hatfield Netball Club - U13s Purple</div>
+<div class="branding">
+    <img src="icons/hatfield.jpg" alt="" style="width:30px;height:auto;border-radius:6px;background:#fff;padding:2px;vertical-align:middle;margin-right:0.3rem">
+    Hatfield Netball Club - U13s Purple
+</div>
 
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
