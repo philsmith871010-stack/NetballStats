@@ -166,8 +166,9 @@ const App = {
         const players = team.players.map((p, i) => ({ ...p, id: i }));
         // Players: 0=Amber(GS), 1=Daisy(GA), 2=Alexa(WA), 3=Poppy(C), 4=Aliska(WD), 5=Gracie(GD), 6=Ellam(GK), 7=Immy, 8=Maisy, 9=Bella
 
+        // courtTime in seconds: 60min match = 3600s. Starters ~2700-3600s, subs ~600-1200s
         const matches = [
-            // Match 1: Opening day win
+            // Match 1: Opening day win - no subs used
             { opp: 'St Albans Stingers', venue: 'Hatfield Leisure Centre', comp: 'Winter League R1', daysAgo: 56,
               home: 28, away: 22, qs: [{home:7,away:6},{home:8,away:5},{home:6,away:7},{home:7,away:4}],
               stats: {
@@ -175,8 +176,10 @@ const App = {
                 2:{centre_pass:6,feed:5,assist:3,turnover:2}, 3:{centre_pass:12,intercept:2,turnover:1},
                 4:{intercept:4,deflection:2,turnover:1}, 5:{intercept:3,deflection:2,rebound:3,turnover:1},
                 6:{intercept:2,deflection:3,rebound:4}
-              }},
-            // Match 2: Tight loss
+              },
+              ct: {0:3600,1:3600,2:3600,3:3600,4:3600,5:3600,6:3600}
+            },
+            // Match 2: Tight loss - Immy gets 15 min
             { opp: 'Welwyn Warriors', venue: 'Gosling Sports Park', comp: 'Winter League R2', daysAgo: 49,
               home: 19, away: 23, qs: [{home:5,away:6},{home:4,away:7},{home:6,away:5},{home:4,away:5}],
               stats: {
@@ -184,8 +187,10 @@ const App = {
                 2:{centre_pass:5,feed:3,turnover:4}, 3:{centre_pass:9,intercept:1,turnover:3},
                 4:{intercept:2,deflection:1,turnover:2}, 5:{intercept:2,deflection:1,rebound:2,turnover:2},
                 6:{intercept:1,deflection:2,rebound:3}, 7:{intercept:1,turnover:1}
-              }},
-            // Match 3: County Cup - big win
+              },
+              ct: {0:3600,1:3600,2:2700,3:3600,4:3600,5:3600,6:3600,7:900}
+            },
+            // Match 3: County Cup - big win, Maisy gets time
             { opp: 'Hertford Hawks', venue: 'Hertford Sports Village', comp: 'County Cup R1', daysAgo: 42,
               home: 35, away: 18, qs: [{home:10,away:5},{home:9,away:4},{home:8,away:5},{home:8,away:4}],
               stats: {
@@ -193,8 +198,10 @@ const App = {
                 2:{centre_pass:9,feed:8,assist:5,turnover:1}, 3:{centre_pass:15,intercept:4,turnover:0},
                 4:{intercept:6,deflection:4,turnover:0}, 5:{intercept:5,deflection:3,rebound:4,turnover:0},
                 6:{intercept:3,deflection:4,rebound:5}, 8:{feed:2,turnover:1}
-              }},
-            // Match 4: Close win, Immy starts at WA
+              },
+              ct: {0:3600,1:3600,2:2700,3:3600,4:3600,5:3600,6:3600,8:900}
+            },
+            // Match 4: Close win, Immy starts WA, Alexa off bench
             { opp: 'Potters Bar Panthers', venue: 'Hatfield Leisure Centre', comp: 'Winter League R3', daysAgo: 35,
               home: 25, away: 24, qs: [{home:6,away:7},{home:7,away:5},{home:5,away:6},{home:7,away:6}],
               stats: {
@@ -202,8 +209,10 @@ const App = {
                 7:{centre_pass:7,feed:4,assist:2,turnover:2}, 3:{centre_pass:11,intercept:3,turnover:1},
                 4:{intercept:4,deflection:3,turnover:1}, 5:{intercept:3,deflection:2,rebound:2,turnover:1},
                 6:{intercept:2,deflection:3,rebound:4}, 2:{feed:2,assist:1,turnover:1}
-              }},
-            // Match 5: Tough away loss
+              },
+              ct: {0:3600,1:3600,7:2700,3:3600,4:3600,5:3600,6:3600,2:900}
+            },
+            // Match 5: Tough away loss - all subs used
             { opp: 'Stevenage Storm', venue: 'Stevenage Leisure Centre', comp: 'Winter League R4', daysAgo: 28,
               home: 20, away: 30, qs: [{home:4,away:8},{home:6,away:7},{home:5,away:8},{home:5,away:7}],
               stats: {
@@ -211,8 +220,10 @@ const App = {
                 2:{centre_pass:5,feed:3,turnover:4}, 3:{centre_pass:8,intercept:1,turnover:3},
                 4:{intercept:2,deflection:1,turnover:3}, 5:{intercept:1,deflection:1,rebound:2,turnover:2},
                 6:{intercept:2,deflection:2,rebound:2}, 9:{intercept:1,turnover:1}
-              }},
-            // Match 6: Bounce back win
+              },
+              ct: {0:3600,1:3600,2:2700,3:2700,4:3600,5:3600,6:3600,7:900,8:900,9:900}
+            },
+            // Match 6: Bounce back win - everyone plays
             { opp: 'Hitchin Heat', venue: 'Hatfield Leisure Centre', comp: 'Winter League R5', daysAgo: 21,
               home: 32, away: 21, qs: [{home:9,away:5},{home:7,away:6},{home:8,away:4},{home:8,away:6}],
               stats: {
@@ -220,8 +231,10 @@ const App = {
                 2:{centre_pass:8,feed:7,assist:4,turnover:1}, 3:{centre_pass:14,intercept:4,turnover:1},
                 4:{intercept:5,deflection:3,turnover:0}, 5:{intercept:4,deflection:3,rebound:3,turnover:0},
                 6:{intercept:3,deflection:4,rebound:5}, 7:{feed:1,assist:1}, 8:{intercept:1}, 10:{turnover:1}
-              }},
-            // Match 7: County Cup Semi - nail biter win
+              },
+              ct: {0:3600,1:3600,2:2400,3:2400,4:3600,5:3600,6:3600,7:1200,8:600,10:600}
+            },
+            // Match 7: County Cup Semi - nail biter, Bella and Martha come on
             { opp: 'Stevenage Storm', venue: 'Welwyn Arena', comp: 'County Cup Semi', daysAgo: 14,
               home: 27, away: 26, qs: [{home:7,away:7},{home:6,away:7},{home:8,away:6},{home:6,away:6}],
               stats: {
@@ -229,8 +242,10 @@ const App = {
                 2:{centre_pass:7,feed:6,assist:4,turnover:2}, 3:{centre_pass:13,intercept:3,turnover:1},
                 4:{intercept:5,deflection:4,turnover:1}, 5:{intercept:4,deflection:2,rebound:3,turnover:1},
                 6:{intercept:3,deflection:3,rebound:5}, 9:{feed:1,turnover:1}
-              }},
-            // Match 8: Last week - dominant win
+              },
+              ct: {0:3600,1:3600,2:2700,3:3600,4:3600,5:3600,6:3600,9:900}
+            },
+            // Match 8: Last week - dominant, lots of rotation
             { opp: 'Welwyn Warriors', venue: 'Hatfield Leisure Centre', comp: 'Winter League R6', daysAgo: 7,
               home: 34, away: 20, qs: [{home:9,away:5},{home:8,away:5},{home:9,away:6},{home:8,away:4}],
               stats: {
@@ -238,7 +253,9 @@ const App = {
                 2:{centre_pass:9,feed:8,assist:6,turnover:1}, 3:{centre_pass:16,intercept:5,turnover:0},
                 4:{intercept:6,deflection:5,turnover:0}, 5:{intercept:5,deflection:3,rebound:4,turnover:0},
                 6:{intercept:4,deflection:5,rebound:6}, 7:{feed:2,assist:1}, 8:{intercept:1,deflection:1}, 9:{intercept:1}, 10:{intercept:1,deflection:1}
-              }},
+              },
+              ct: {0:3600,1:3600,2:2100,3:2400,4:3600,5:2700,6:2700,7:1500,8:900,9:900,10:900}
+            },
         ];
 
         return matches.map((m, idx) => {
@@ -279,6 +296,7 @@ const App = {
                 quarterScores: m.qs,
                 players,
                 playerStats: m.stats,
+                courtTime: m.ct || {},
                 events,
                 trackingLevel: 'detailed',
                 quarterLength: 15,
@@ -625,6 +643,10 @@ const App = {
             events: [],
             // Per-player stat accumulators { playerId: { goal: N, miss: N, ... } }
             playerStats: {},
+            // Court time tracking: { playerId: seconds }
+            courtTime: {},
+            // Track who was on court at start of current timing segment
+            _courtOnSince: {},
         };
 
         // Copy lineup to match court
@@ -633,9 +655,17 @@ const App = {
         });
         this.match.quarterLineups[0] = { ...this.match.court };
 
-        // Init player stats
+        // Init player stats and court time
         this.setupPlayers.forEach(p => {
             this.match.playerStats[p.id] = {};
+            this.match.courtTime[p.id] = 0;
+        });
+
+        // Mark starting 7 as on court from now
+        const now = Date.now();
+        this.POSITIONS.forEach(pos => {
+            const p = this.match.court[pos];
+            if (p) this.match._courtOnSince[p.id] = now;
         });
 
         // Reset timer
@@ -755,8 +785,24 @@ const App = {
         });
     },
 
+    accumulateCourtTime(playerId) {
+        if (!this.match || !this.match._courtOnSince[playerId]) return;
+        const elapsed = Math.floor((Date.now() - this.match._courtOnSince[playerId]) / 1000);
+        this.match.courtTime[playerId] = (this.match.courtTime[playerId] || 0) + elapsed;
+    },
+
+    finalizeCourtTime() {
+        if (!this.match) return;
+        // Accumulate time for everyone still on court
+        Object.keys(this.match._courtOnSince).forEach(pid => {
+            this.accumulateCourtTime(parseInt(pid));
+        });
+        this.match._courtOnSince = {};
+    },
+
     endMatch() {
         this.pauseTimer();
+        this.finalizeCourtTime();
         this.addSystemEvent('Full time');
 
         // Save match to history
@@ -772,6 +818,7 @@ const App = {
             quarterScores: this.match.quarterScores,
             players: this.match.players,
             playerStats: this.match.playerStats,
+            courtTime: this.match.courtTime,
             events: this.match.events,
             trackingLevel: this.match.trackingLevel,
             quarterLength: this.match.quarterLength,
@@ -1179,14 +1226,18 @@ const App = {
         const offPlayer = this.match.players.find(p => p.id === playerOff.id);
         const onPlayer = this.match.players.find(p => p.id === playerOn.id);
 
+        // Update court time: player going off
+        this.accumulateCourtTime(playerOff.id);
+        delete this.match._courtOnSince[playerOff.id];
+
         // Remove the player going off from their current position
         delete this.match.court[playerOff.pos];
 
         // Place the incoming player at the new position
         this.match.court[newPos] = { ...onPlayer, position: newPos };
 
-        // If the new position was occupied by someone else (position swap), move them off
-        // (This is already handled because we deleted playerOff.pos)
+        // Start tracking court time for player coming on
+        this.match._courtOnSince[playerOn.id] = Date.now();
 
         this.addSystemEvent(`Sub: ${onPlayer.name} on (${newPos}), ${offPlayer.name} off`);
         this.renderCourtPlayers();

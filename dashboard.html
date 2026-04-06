@@ -295,6 +295,8 @@
         // Aggregate player stats across season
         const seasonStats = {};
         const playerNames = {};
+        const seasonCourtTime = {}; // pid -> total seconds
+        const matchesPlayed = {}; // pid -> count
 
         matches.forEach(m => {
             totalFor += m.homeScore || 0;
@@ -307,6 +309,12 @@
                     });
                     totalGoals += s.goal || 0;
                     totalMisses += s.miss || 0;
+                    matchesPlayed[pid] = (matchesPlayed[pid] || 0) + 1;
+                });
+            }
+            if (m.courtTime) {
+                Object.entries(m.courtTime).forEach(([pid, secs]) => {
+                    seasonCourtTime[pid] = (seasonCourtTime[pid] || 0) + secs;
                 });
             }
             if (m.players) {
@@ -377,22 +385,23 @@
             return (gb + ib) - (ga + ia);
         });
 
-        let tableHtml = `<thead><tr><th>Player</th><th>G</th><th>Sh%</th><th>Int</th><th>Def</th><th>Reb</th><th>TO</th><th>CP</th><th>Feed</th><th>Ast</th></tr></thead><tbody>`;
+        let tableHtml = `<thead><tr><th>Player</th><th>MP</th><th>Min</th><th>G</th><th>Sh%</th><th>Int</th><th>Def</th><th>Reb</th><th>TO</th></tr></thead><tbody>`;
         allPids.forEach(pid => {
             const s = seasonStats[pid];
-            const g = s.goal || 0, m = s.miss || 0, total = g + m;
+            const g = s.goal || 0, ms = s.miss || 0, total = g + ms;
             const pct = total > 0 ? Math.round((g / total) * 100) + '%' : '-';
+            const mins = Math.round((seasonCourtTime[pid] || 0) / 60);
+            const mp = matchesPlayed[pid] || 0;
             tableHtml += `<tr>
                 <td>${playerNames[pid] || pid}</td>
+                <td>${mp}</td>
+                <td>${mins || '-'}</td>
                 <td class="${g > 0 ? 'highlight' : ''}">${g || '-'}</td>
                 <td class="${total > 0 ? 'highlight-accent' : ''}">${pct}</td>
                 <td>${s.intercept || '-'}</td>
                 <td>${s.deflection || '-'}</td>
                 <td>${s.rebound || '-'}</td>
                 <td>${s.turnover || '-'}</td>
-                <td>${s.centre_pass || '-'}</td>
-                <td>${s.feed || '-'}</td>
-                <td>${s.assist || '-'}</td>
             </tr>`;
         });
         tableHtml += '</tbody>';
