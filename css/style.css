@@ -579,6 +579,27 @@ hr {
 .court-row-centre .court-slot {
     width: 28%;
 }
+
+/* Attack - green/teal */
+.court-row-attack .court-slot {
+    background: linear-gradient(135deg, #064e3b, #065f46);
+    border-color: #10B981;
+}
+.court-row-attack .court-slot .cs-pos { color: #6EE7B7; }
+
+/* Centre - purple (club colour) */
+.court-row-centre .court-slot {
+    background: linear-gradient(135deg, #3b1870, #4c1d95);
+    border-color: var(--primary-light);
+}
+.court-row-centre .court-slot .cs-pos { color: #c4b5fd; }
+
+/* Defence - blue */
+.court-row-defence .court-slot {
+    background: linear-gradient(135deg, #1e3a5f, #1e40af);
+    border-color: #3B82F6;
+}
+.court-row-defence .court-slot .cs-pos { color: #93C5FD; }
 .court-slot:active { transform: scale(0.96); }
 .court-slot .cs-pos {
     font-size: 0.7rem;
@@ -604,9 +625,8 @@ hr {
     line-height: 1;
 }
 .court-slot.selected {
-    border-color: var(--primary-light);
-    background: rgba(108,43,217,0.2);
-    box-shadow: 0 0 0 2px var(--primary-light);
+    border-color: #fff !important;
+    box-shadow: 0 0 0 2px #fff, 0 0 12px rgba(255,255,255,0.3);
 }
 
 /* ---- Action Buttons - single 2-col grid ---- */
