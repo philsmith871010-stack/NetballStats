@@ -1,8 +1,9 @@
-const CACHE_NAME = 'netballstats-v16';
+const CACHE_NAME = 'netballstats-v17';
 const ASSETS = [
   './',
   './index.html',
   './live.html',
+  './dashboard.html',
   './css/style.css',
   './js/app.js',
   './js/firebase.js',

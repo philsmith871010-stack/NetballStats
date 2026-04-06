@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#5B2D8E">
+    <title>Hatfield NC U13s - Season Dashboard</title>
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #5B2D8E; --primary-dark: #462170; --primary-deeper: #351A56;
+            --accent: #C4A265; --accent-light: #D4BA85;
+            --success: #22C55E; --danger: #EF4444; --warning: #F59E0B;
+            --bg: #0C111B; --bg-card: #161D2E; --bg-elevated: #1F2937;
+            --text: #EAEFF6; --text-muted: #8896AB; --text-dim: #4B5C73;
+            --border: rgba(255,255,255,0.08); --border-strong: rgba(255,255,255,0.14);
+            --radius: 14px; --radius-sm: 10px; --radius-xs: 6px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            background: var(--bg); color: var(--text);
+            min-height: 100vh; letter-spacing: -0.01em;
+        }
+
+        /* Header */
+        .dash-header {
+            background: linear-gradient(160deg, var(--primary-deeper), var(--primary));
+            padding: 1.5rem 1rem 1.25rem;
+            text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .dash-header::before {
+            content: ''; position: absolute; top: -40%; right: -20%;
+            width: 60%; height: 120%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%);
+        }
+        .dash-header img {
+            width: 50px; border-radius: 10px; background: #fff; padding: 3px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3); margin-bottom: 0.4rem;
+        }
+        .dash-header h1 { font-size: 1.3rem; font-weight: 800; position: relative; }
+        .dash-header p { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-weight: 500; position: relative; }
+
+        /* Section */
+        .section { padding: 1rem; }
+        .section-title {
+            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 0.6rem;
+        }
+
+        /* Stat Cards Row */
+        .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem; }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 0.6rem; text-align: center;
+        }
+        .stat-card .big { font-size: 1.8rem; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+        .stat-card .label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 0.15rem; }
+        .stat-card.win .big { color: var(--success); }
+        .stat-card.loss .big { color: var(--danger); }
+        .stat-card.accent .big { color: var(--accent-light); }
+
+        /* Bar Chart */
+        .bar-chart { display: flex; flex-direction: column; gap: 0.35rem; }
+        .bar-row {
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .bar-label { font-size: 0.75rem; font-weight: 600; min-width: 65px; }
+        .bar-track {
+            flex: 1; height: 24px; background: var(--bg-elevated);
+            border-radius: 6px; overflow: hidden; position: relative;
+        }
+        .bar-fill {
+            height: 100%; border-radius: 6px;
+            transition: width 0.8s ease;
+            display: flex; align-items: center; padding-left: 0.4rem;
+            font-size: 0.7rem; font-weight: 700; color: #fff; min-width: fit-content;
+        }
+        .bar-fill.green { background: linear-gradient(90deg, #059669, var(--success)); }
+        .bar-fill.purple { background: linear-gradient(90deg, var(--primary-dark), var(--primary)); }
+        .bar-fill.blue { background: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+        .bar-fill.amber { background: linear-gradient(90deg, #b45309, var(--warning)); }
+        .bar-fill.red { background: linear-gradient(90deg, #b91c1c, var(--danger)); }
+
+        /* Result Streak */
+        .streak { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+        .streak-dot {
+            width: 36px; height: 36px; border-radius: var(--radius-xs);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: 800; color: #fff;
+        }
+        .streak-dot.w { background: var(--success); }
+        .streak-dot.l { background: var(--danger); }
+
+        /* Match Results List */
+        .results { display: flex; flex-direction: column; gap: 0.4rem; }
+        .result {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;
+        }
+        .result-badge {
+            width: 28px; height: 28px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; font-weight: 800; color: #fff; flex-shrink: 0;
+        }
+        .result-badge.w { background: var(--success); }
+        .result-badge.l { background: var(--danger); }
+        .result-info { flex: 1; }
+        .result-score { font-weight: 800; font-size: 0.95rem; }
+        .result-opp { font-size: 0.75rem; color: var(--text-muted); }
+        .result-meta { font-size: 0.65rem; color: var(--text-dim); }
+
+        /* Player Table */
+        .player-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        .player-table th {
+            background: var(--bg-elevated); padding: 0.45rem 0.3rem;
+            text-align: center; font-weight: 700; font-size: 0.6rem;
+            text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim);
+            position: sticky; top: 0;
+        }
+        .player-table th:first-child { text-align: left; padding-left: 0.6rem; }
+        .player-table td {
+            padding: 0.5rem 0.3rem; text-align: center;
+            border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums;
+        }
+        .player-table td:first-child {
+            text-align: left; padding-left: 0.6rem; font-weight: 600;
+        }
+        .player-table tr:last-child td { border-bottom: none; }
+        .highlight { color: var(--success); font-weight: 800; }
+        .highlight-accent { color: var(--accent-light); font-weight: 800; }
+
+        /* Shooting Chart */
+        .shoot-chart { display: flex; flex-direction: column; gap: 0.4rem; }
+        .shoot-row { display: flex; align-items: center; gap: 0.4rem; }
+        .shoot-name { font-size: 0.8rem; font-weight: 700; min-width: 55px; }
+        .shoot-bar-track {
+            flex: 1; height: 28px; background: var(--bg-elevated);
+            border-radius: 6px; overflow: hidden; display: flex;
+        }
+        .shoot-goals {
+            background: var(--success); display: flex; align-items: center;
+            justify-content: center; font-size: 0.7rem; font-weight: 700; color: #fff;
+        }
+        .shoot-misses {
+            background: var(--danger); display: flex; align-items: center;
+            justify-content: center; font-size: 0.7rem; font-weight: 700; color: #fff;
+        }
+        .shoot-pct {
+            font-size: 0.8rem; font-weight: 800; min-width: 38px; text-align: right;
+            color: var(--accent-light);
+        }
+
+        /* Tabs */
+        .tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .tab {
+            flex: 1; padding: 0.55rem; text-align: center; font-size: 0.75rem;
+            font-weight: 700; color: var(--text-dim); background: none; border: none;
+            cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s;
+        }
+        .tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .branding {
+            padding: 1.5rem; text-align: center; font-size: 0.65rem;
+            color: var(--text-dim); letter-spacing: 0.5px;
+        }
+        .loading { text-align: center; padding: 3rem; color: var(--text-dim); }
+    </style>
+</head>
+<body>
+
+<div class="dash-header">
+    <img src="icons/hatfield.jpg" alt="Hatfield NC">
+    <h1>Season Dashboard</h1>
+    <p>Hatfield NC U13s Purple</p>
+</div>
+
+<div id="loading" class="loading">Loading season data...</div>
+<div id="dashboard" style="display:none">
+
+    <!-- Season Overview -->
+    <div class="section">
+        <div class="section-title">Season Overview</div>
+        <div class="stat-row" id="overview-stats"></div>
+    </div>
+
+    <!-- Results Streak -->
+    <div class="section">
+        <div class="section-title">Form</div>
+        <div class="streak" id="form-streak"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('shooting')">Shooting</button>
+        <button class="tab" onclick="switchTab('players')">Players</button>
+        <button class="tab" onclick="switchTab('defence')">Defence</button>
+        <button class="tab" onclick="switchTab('results')">Results</button>
+    </div>
+
+    <!-- Shooting Tab -->
+    <div id="tab-shooting" class="tab-content active">
+        <div class="section">
+            <div class="section-title">Shooting by Player</div>
+            <div class="shoot-chart" id="shooting-chart"></div>
+        </div>
+        <div class="section">
+            <div class="section-title">Shooting % by Match</div>
+            <div class="bar-chart" id="shooting-trend"></div>
+        </div>
+    </div>
+
+    <!-- Players Tab -->
+    <div id="tab-players" class="tab-content">
+        <div class="section">
+            <div class="section-title">Player Season Totals</div>
+            <div style="overflow-x:auto">
+                <table class="player-table" id="player-totals"></table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Defence Tab -->
+    <div id="tab-defence" class="tab-content">
+        <div class="section">
+            <div class="section-title">Intercepts by Player</div>
+            <div class="bar-chart" id="intercept-chart"></div>
+        </div>
+        <div class="section">
+            <div class="section-title">Turnovers by Player</div>
+            <div class="bar-chart" id="turnover-chart"></div>
+        </div>
+    </div>
+
+    <!-- Results Tab -->
+    <div id="tab-results" class="tab-content">
+        <div class="section">
+            <div class="section-title">All Results</div>
+            <div class="results" id="results-list"></div>
+        </div>
+    </div>
+</div>
+
+<div class="branding">
+    <img src="icons/hatfield.jpg" alt="" style="width:24px;border-radius:5px;background:#fff;padding:1px;vertical-align:middle;margin-right:0.2rem">
+    Hatfield Netball Club
+</div>
+
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFirestore, collection, getDocs }
+        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const app = initializeApp({
+        apiKey: "AIzaSyCCCj33LlcJ1yB0SxI6mH8jBm0AT2YB9hQ",
+        authDomain: "netballstats-6a872.firebaseapp.com",
+        projectId: "netballstats-6a872",
+        storageBucket: "netballstats-6a872.firebasestorage.app",
+        messagingSenderId: "340532434363",
+        appId: "1:340532434363:web:763de79b6ca1bd8f04209e"
+    });
+    const db = getFirestore(app);
+
+    const tabNames = ['shooting', 'players', 'defence', 'results'];
+    window.switchTab = function(tab) {
+        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', tabNames[i] === tab));
+        tabNames.forEach(t => document.getElementById('tab-' + t).classList.toggle('active', t === tab));
+    };
+
+    async function loadDashboard() {
+        const snap = await getDocs(collection(db, 'matches'));
+        let matches = snap.docs.map(d => d.data());
+        matches.sort((a, b) => a.id - b.id); // chronological
+
+        if (!matches.length) {
+            document.getElementById('loading').textContent = 'No matches yet — play some games first!';
+            return;
+        }
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboard').style.display = '';
+
+        const wins = matches.filter(m => m.homeScore > m.awayScore).length;
+        const losses = matches.length - wins;
+        let totalGoals = 0, totalMisses = 0, totalFor = 0, totalAgainst = 0;
+
+        // Aggregate player stats across season
+        const seasonStats = {};
+        const playerNames = {};
+
+        matches.forEach(m => {
+            totalFor += m.homeScore || 0;
+            totalAgainst += m.awayScore || 0;
+            if (m.playerStats) {
+                Object.entries(m.playerStats).forEach(([pid, s]) => {
+                    if (!seasonStats[pid]) seasonStats[pid] = {};
+                    Object.entries(s).forEach(([k, v]) => {
+                        seasonStats[pid][k] = (seasonStats[pid][k] || 0) + v;
+                    });
+                    totalGoals += s.goal || 0;
+                    totalMisses += s.miss || 0;
+                });
+            }
+            if (m.players) {
+                m.players.forEach(p => { playerNames[p.id] = p.name; });
+            }
+        });
+
+        const totalAttempts = totalGoals + totalMisses;
+        const shootPct = totalAttempts > 0 ? Math.round((totalGoals / totalAttempts) * 100) : 0;
+
+        // Overview stats
+        document.getElementById('overview-stats').innerHTML = `
+            <div class="stat-card win"><div class="big">${wins}</div><div class="label">Wins</div></div>
+            <div class="stat-card loss"><div class="big">${losses}</div><div class="label">Losses</div></div>
+            <div class="stat-card accent"><div class="big">${shootPct}%</div><div class="label">Shooting</div></div>
+            <div class="stat-card"><div class="big">${totalFor}</div><div class="label">Goals For</div></div>
+            <div class="stat-card"><div class="big">${totalAgainst}</div><div class="label">Goals Agst</div></div>
+            <div class="stat-card accent"><div class="big">+${totalFor - totalAgainst}</div><div class="label">Diff</div></div>
+        `;
+
+        // Form streak
+        document.getElementById('form-streak').innerHTML = matches.map(m => {
+            const w = m.homeScore > m.awayScore;
+            return `<div class="streak-dot ${w ? 'w' : 'l'}">${w ? 'W' : 'L'}<br>${m.homeScore}-${m.awayScore}</div>`;
+        }).join('');
+
+        // Shooting chart (per player)
+        const shooters = Object.entries(seasonStats)
+            .filter(([_, s]) => (s.goal || 0) + (s.miss || 0) > 0)
+            .sort((a, b) => (b[1].goal || 0) - (a[1].goal || 0));
+
+        const maxShots = Math.max(...shooters.map(([_, s]) => (s.goal || 0) + (s.miss || 0)));
+
+        document.getElementById('shooting-chart').innerHTML = shooters.map(([pid, s]) => {
+            const g = s.goal || 0, m = s.miss || 0, total = g + m;
+            const pct = Math.round((g / total) * 100);
+            const gw = (g / maxShots) * 100;
+            const mw = (m / maxShots) * 100;
+            return `<div class="shoot-row">
+                <span class="shoot-name">${playerNames[pid] || pid}</span>
+                <div class="shoot-bar-track">
+                    <div class="shoot-goals" style="width:${gw}%">${g}</div>
+                    <div class="shoot-misses" style="width:${mw}%">${m}</div>
+                </div>
+                <span class="shoot-pct">${pct}%</span>
+            </div>`;
+        }).join('');
+
+        // Shooting trend (per match)
+        document.getElementById('shooting-trend').innerHTML = matches.map(m => {
+            let g = 0, ms = 0;
+            if (m.playerStats) Object.values(m.playerStats).forEach(s => { g += s.goal || 0; ms += s.miss || 0; });
+            const total = g + ms;
+            const pct = total > 0 ? Math.round((g / total) * 100) : 0;
+            const w = m.homeScore > m.awayScore;
+            return `<div class="bar-row">
+                <span class="bar-label" style="font-size:0.7rem">${m.awayTeam.split(' ').pop()}</span>
+                <div class="bar-track">
+                    <div class="bar-fill ${w ? 'green' : 'red'}" style="width:${pct}%">${pct}%</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Player totals table
+        const allPids = Object.keys(seasonStats).sort((a, b) => {
+            const ga = seasonStats[a].goal || 0, gb = seasonStats[b].goal || 0;
+            const ia = seasonStats[a].intercept || 0, ib = seasonStats[b].intercept || 0;
+            return (gb + ib) - (ga + ia);
+        });
+
+        let tableHtml = `<thead><tr><th>Player</th><th>G</th><th>Sh%</th><th>Int</th><th>Def</th><th>Reb</th><th>TO</th><th>CP</th><th>Feed</th><th>Ast</th></tr></thead><tbody>`;
+        allPids.forEach(pid => {
+            const s = seasonStats[pid];
+            const g = s.goal || 0, m = s.miss || 0, total = g + m;
+            const pct = total > 0 ? Math.round((g / total) * 100) + '%' : '-';
+            tableHtml += `<tr>
+                <td>${playerNames[pid] || pid}</td>
+                <td class="${g > 0 ? 'highlight' : ''}">${g || '-'}</td>
+                <td class="${total > 0 ? 'highlight-accent' : ''}">${pct}</td>
+                <td>${s.intercept || '-'}</td>
+                <td>${s.deflection || '-'}</td>
+                <td>${s.rebound || '-'}</td>
+                <td>${s.turnover || '-'}</td>
+                <td>${s.centre_pass || '-'}</td>
+                <td>${s.feed || '-'}</td>
+                <td>${s.assist || '-'}</td>
+            </tr>`;
+        });
+        tableHtml += '</tbody>';
+        document.getElementById('player-totals').innerHTML = tableHtml;
+
+        // Intercepts chart
+        const interceptors = Object.entries(seasonStats)
+            .filter(([_, s]) => s.intercept > 0)
+            .sort((a, b) => b[1].intercept - a[1].intercept);
+        const maxInt = interceptors.length ? interceptors[0][1].intercept : 1;
+
+        document.getElementById('intercept-chart').innerHTML = interceptors.map(([pid, s]) => {
+            const pct = (s.intercept / maxInt) * 100;
+            return `<div class="bar-row">
+                <span class="bar-label">${playerNames[pid]}</span>
+                <div class="bar-track">
+                    <div class="bar-fill purple" style="width:${pct}%">${s.intercept}</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Turnovers chart
+        const turnovers = Object.entries(seasonStats)
+            .filter(([_, s]) => s.turnover > 0)
+            .sort((a, b) => b[1].turnover - a[1].turnover);
+        const maxTO = turnovers.length ? turnovers[0][1].turnover : 1;
+
+        document.getElementById('turnover-chart').innerHTML = turnovers.map(([pid, s]) => {
+            const pct = (s.turnover / maxTO) * 100;
+            return `<div class="bar-row">
+                <span class="bar-label">${playerNames[pid]}</span>
+                <div class="bar-track">
+                    <div class="bar-fill red" style="width:${pct}%">${s.turnover}</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        // Results list
+        document.getElementById('results-list').innerHTML = [...matches].reverse().map(m => {
+            const w = m.homeScore > m.awayScore;
+            return `<div class="result">
+                <div class="result-badge ${w ? 'w' : 'l'}">${w ? 'W' : 'L'}</div>
+                <div class="result-info">
+                    <div class="result-score">${m.homeScore} - ${m.awayScore} <span style="font-weight:400;font-size:0.8rem;color:var(--text-muted)">vs ${m.awayTeam}</span></div>
+                    <div class="result-meta">${m.date || ''}${m.venue ? ' · ' + m.venue : ''}${m.competition ? ' · ' + m.competition : ''}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    loadDashboard().catch(e => {
+        console.error(e);
+        document.getElementById('loading').textContent = 'Error loading data';
+    });
+</script>
+</body>
+</html>
