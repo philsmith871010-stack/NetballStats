@@ -749,7 +749,7 @@ const App = {
         }
         if (stats.intercept) parts.push(`Int:${stats.intercept}`);
         if (stats.turnover) parts.push(`TO:${stats.turnover}`);
-        return parts.join(' ') || '--';
+        return parts.join(' ');
     },
 
     // ==========================================
