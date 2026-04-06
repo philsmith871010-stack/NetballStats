@@ -1,4 +1,4 @@
-const CACHE_NAME = 'netballstats-v1';
+const CACHE_NAME = 'netballstats-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -26,10 +26,16 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch - serve from cache, fall back to network
+// Fetch - network first, fall back to cache (so updates always show)
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(cached => cached || fetch(event.request))
+    fetch(event.request)
+      .then(response => {
+        // Update cache with fresh version
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
