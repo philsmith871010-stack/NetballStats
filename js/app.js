@@ -119,6 +119,101 @@ const App = {
             this.teams = JSON.parse(JSON.stringify(this.SAMPLE_TEAMS));
             this.saveTeams();
         }
+        if (this.matches.length === 0) {
+            this.matches = [this.createSampleMatch()];
+            this.saveMatches();
+        }
+    },
+
+    createSampleMatch() {
+        const team = this.SAMPLE_TEAMS[0];
+        const opp = this.SAMPLE_TEAMS[1];
+        const players = team.players.map((p, i) => ({ ...p, id: i }));
+        const positions = this.POSITIONS;
+
+        // Build player stats with realistic numbers
+        const playerStats = {};
+        players.forEach(p => { playerStats[p.id] = {}; });
+
+        // GS (#1) - main shooter
+        playerStats[0] = { goal: 18, miss: 5, rebound: 3 };
+        // GA (#2) - second shooter
+        playerStats[1] = { goal: 12, miss: 4, rebound: 2, intercept: 1 };
+        // WA (#3)
+        playerStats[2] = { centre_pass: 8, feed: 6, assist: 4, turnover: 2 };
+        // C (#4)
+        playerStats[3] = { centre_pass: 14, intercept: 3, turnover: 1 };
+        // WD (#5)
+        playerStats[4] = { intercept: 5, deflection: 3, turnover: 1 };
+        // GD (#6)
+        playerStats[5] = { intercept: 4, deflection: 2, rebound: 3, turnover: 1 };
+        // GK (#7)
+        playerStats[6] = { intercept: 3, deflection: 4, rebound: 5 };
+
+        // Quarter scores that add up to 30-25
+        const quarterScores = [
+            { home: 8, away: 7 },
+            { home: 7, away: 5 },
+            { home: 9, away: 8 },
+            { home: 6, away: 5 },
+        ];
+
+        // Build a sample event timeline
+        const events = [];
+        const actionPool = [
+            { pid: 0, action: 'goal', pos: 'GS', team: 'home' },
+            { pid: 1, action: 'goal', pos: 'GA', team: 'home' },
+            { pid: 0, action: 'miss', pos: 'GS', team: 'home' },
+            { pid: 3, action: 'centre_pass', pos: 'C', team: 'home' },
+            { pid: 4, action: 'intercept', pos: 'WD', team: 'home' },
+            { pid: null, action: 'opp_goal', pos: null, team: 'away' },
+            { pid: 5, action: 'intercept', pos: 'GD', team: 'home' },
+            { pid: 6, action: 'rebound', pos: 'GK', team: 'home' },
+            { pid: 2, action: 'turnover', pos: 'WA', team: 'home' },
+            { pid: 1, action: 'goal', pos: 'GA', team: 'home' },
+        ];
+
+        // Generate events across 4 quarters
+        let eventId = 1000;
+        for (let q = 1; q <= 4; q++) {
+            events.push({ id: eventId++, quarter: q, time: '0:00', playerId: null, playerName: `Q${q} started`, position: null, action: 'system', team: null });
+            for (let i = 0; i < 12; i++) {
+                const a = actionPool[Math.floor(Math.random() * actionPool.length)];
+                const mins = Math.floor((i / 12) * 15);
+                const secs = Math.floor(Math.random() * 60);
+                events.push({
+                    id: eventId++,
+                    quarter: q,
+                    time: `${mins}:${secs.toString().padStart(2, '0')}`,
+                    playerId: a.pid,
+                    playerName: a.pid !== null ? players[a.pid].name : opp.name,
+                    position: a.pos,
+                    action: a.action,
+                    team: a.team,
+                });
+            }
+        }
+        events.push({ id: eventId++, quarter: 4, time: '15:00', playerId: null, playerName: 'Full time', position: null, action: 'system', team: null });
+
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        return {
+            id: Date.now() - 86400000,
+            date: yesterday.toISOString().split('T')[0],
+            venue: 'Central Courts',
+            competition: 'Winter League',
+            homeTeam: team.name,
+            awayTeam: opp.name,
+            homeScore: 30,
+            awayScore: 25,
+            quarterScores,
+            players,
+            playerStats,
+            events,
+            trackingLevel: 'detailed',
+            quarterLength: 15,
+        };
     },
 
     saveTeams() {
