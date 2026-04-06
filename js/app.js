@@ -836,29 +836,46 @@ const App = {
     },
 
     // ==========================================
-    // COURT PLAYER GRID (court-shaped 2-3-2)
+    // PLAYER LIST (left column)
     // ==========================================
+    ZONE_MAP: { GS: 'attack', GA: 'attack', WA: 'centre', C: 'centre', WD: 'centre', GD: 'defence', GK: 'defence' },
+
     renderCourtPlayers() {
+        const container = document.getElementById('col-players');
+        const courtIds = new Set();
+
+        // On-court players grouped by position order
+        let html = '';
         this.POSITIONS.forEach(pos => {
-            const slot = document.getElementById('court-slot-' + pos);
             const player = this.match.court[pos];
-            if (!player) {
-                slot.innerHTML = `<span class="cs-pos">${pos}</span><span class="cs-name">--</span>`;
-                slot.dataset.playerId = '';
-                return;
-            }
+            if (!player) return;
+            courtIds.add(player.id);
             const stats = this.match.playerStats[player.id] || {};
             const statLine = this.getPlayerStatLine(stats, pos);
-            slot.dataset.playerId = player.id;
-            slot.innerHTML = `
-                <span class="cs-pos">${pos}</span>
-                <span class="cs-name">${player.name}</span>
-                <span class="cs-stats">${statLine}</span>
-            `;
-            // Re-apply selected state
-            slot.classList.toggle('selected',
-                this.selectedMatchPlayer && this.selectedMatchPlayer.id === player.id);
+            const zone = this.ZONE_MAP[pos];
+            const selected = this.selectedMatchPlayer && this.selectedMatchPlayer.id === player.id;
+            html += `<div class="player-btn zone-${zone} ${selected ? 'selected' : ''}"
+                data-player-id="${player.id}" data-pos="${pos}"
+                onclick="App.selectMatchPlayer(${player.id}, '${pos}')">
+                <span class="pb-pos">${pos}</span>
+                <span class="pb-name">${player.name}</span>
+                <span class="pb-stat">${statLine}</span>
+            </div>`;
         });
+
+        // Bench players
+        this.match.players.forEach(p => {
+            if (courtIds.has(p.id)) return;
+            const selected = this.selectedMatchPlayer && this.selectedMatchPlayer.id === p.id;
+            html += `<div class="player-btn zone-bench ${selected ? 'selected' : ''}"
+                data-player-id="${p.id}" data-pos=""
+                onclick="App.selectMatchPlayer(${p.id}, '')">
+                <span class="pb-pos">SUB</span>
+                <span class="pb-name">${p.name}</span>
+            </div>`;
+        });
+
+        container.innerHTML = html;
     },
 
     getPlayerStatLine(stats, pos) {
@@ -867,27 +884,17 @@ const App = {
             const goals = stats.goal || 0;
             const misses = stats.miss || 0;
             const attempts = goals + misses;
-            if (attempts > 0) {
-                parts.push(`${goals}/${attempts}`);
-            }
+            if (attempts > 0) parts.push(`${goals}/${attempts}`);
         }
-        if (stats.intercept) parts.push(`Int:${stats.intercept}`);
-        if (stats.turnover) parts.push(`TO:${stats.turnover}`);
+        if (stats.intercept) parts.push(`I${stats.intercept}`);
+        if (stats.turnover) parts.push(`T${stats.turnover}`);
         return parts.join(' ');
     },
 
     // ==========================================
-    // PLAYER SELECTION & ACTIONS (2-tap flow)
-    // All visible on one screen - tap player, tap action
+    // PLAYER SELECTION & ACTION RENDERING
     // ==========================================
-    selectMatchPlayer(slotOrId, pos) {
-        // Support being called from court-slot onclick (element, pos)
-        let playerId;
-        if (typeof slotOrId === 'object') {
-            playerId = parseInt(slotOrId.dataset.playerId);
-        } else {
-            playerId = slotOrId;
-        }
+    selectMatchPlayer(playerId, pos) {
         if (isNaN(playerId)) return;
 
         // Toggle off if already selected
@@ -899,54 +906,53 @@ const App = {
         this.selectedMatchPlayer = { id: playerId, pos };
         const player = this.match.players.find(p => p.id === playerId);
 
-        // Highlight selected slot
-        document.querySelectorAll('.court-slot').forEach(s => {
-            s.classList.toggle('selected', parseInt(s.dataset.playerId) === playerId);
+        // Highlight selected
+        document.querySelectorAll('.player-btn').forEach(b => {
+            b.classList.toggle('selected', parseInt(b.dataset.playerId) === playerId);
         });
 
-        // Update ticker to show selected player
-        const ticker = document.getElementById('last-event-ticker');
-        ticker.textContent = `Selected: ${pos} - ${player.name}`;
+        // Update ticker
+        document.getElementById('last-event-ticker').textContent =
+            `Selected: ${pos || 'SUB'} ${player.name}`;
 
         // Render action buttons for this position
         this.renderActionButtons(pos);
     },
 
-    // PRIMARY actions = Goal, Miss (big buttons for shooters)
-    // SECONDARY actions = everything else (smaller)
-    PRIMARY_ACTIONS: ['goal', 'miss'],
+    // Action categories
+    SHOOTING_ACTIONS: ['goal', 'miss'],
+    POSITIVE_ACTIONS: ['centre_pass', 'intercept', 'rebound', 'feed', 'assist', 'deflection', 'pickup'],
+    NEGATIVE_ACTIONS: ['turnover', 'penalty_contact', 'penalty_obstruction'],
 
     renderActionButtons(pos) {
         const actions = this.trackingLevel === 'basic' ? this.ACTIONS_BASIC : this.ACTIONS_DETAILED;
-        const grid = document.getElementById('action-secondary');
+        const shootEl = document.getElementById('actions-shooting');
+        const posEl = document.getElementById('actions-positive');
+        const negEl = document.getElementById('actions-negative');
 
-        if (!pos) {
-            // No player selected — show 6 greyed-out placeholders so layout stays fixed
-            grid.innerHTML = actions.slice(0, 6)
-                .map(a => `<button class="action-btn-secondary ${a.css} disabled" disabled>
+        const available = pos
+            ? actions.filter(a => !a.positions || a.positions.includes(pos))
+            : actions;
+        const disabled = !pos;
+
+        const renderGroup = (keys) => {
+            return available.filter(a => keys.includes(a.key))
+                .map(a => `<button class="action-btn ${a.css} ${disabled ? 'disabled' : ''}"
+                    ${disabled ? 'disabled' : `onclick="App.recordAction('${a.key}')"`}>
                     <span class="action-icon">${a.icon}</span> ${a.label}
                 </button>`).join('');
-            return;
-        }
+        };
 
-        const available = actions.filter(a => !a.positions || a.positions.includes(pos));
-
-        // Render all in one grid — Goal/Miss get their colours, all same size
-        grid.innerHTML = available
-            .map(a => `<button class="action-btn-secondary ${a.css}" onclick="App.recordAction('${a.key}')">
-                <span class="action-icon">${a.icon}</span> ${a.label}
-            </button>`).join('');
-
-        // Pad to 6 buttons so layout never shifts
-        const pad = 6 - available.length;
-        for (let i = 0; i < pad; i++) {
-            grid.innerHTML += `<button class="action-btn-secondary disabled" disabled>&nbsp;</button>`;
-        }
+        shootEl.innerHTML = renderGroup(this.SHOOTING_ACTIONS) ||
+            `<button class="action-btn action-goal disabled" disabled><span class="action-icon">&#9917;</span> Goal</button>
+             <button class="action-btn action-miss disabled" disabled><span class="action-icon">&#10060;</span> Miss</button>`;
+        posEl.innerHTML = renderGroup(this.POSITIVE_ACTIONS);
+        negEl.innerHTML = renderGroup(this.NEGATIVE_ACTIONS);
     },
 
     cancelPlayerSelection() {
         this.selectedMatchPlayer = null;
-        document.querySelectorAll('.court-slot').forEach(s => s.classList.remove('selected'));
+        document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('selected'));
         document.getElementById('last-event-ticker').textContent = 'Tap a player, then tap an action';
         this.renderActionButtons(null);
     },

@@ -233,27 +233,20 @@
     <!-- Last event ticker -->
     <div id="last-event-ticker" class="last-event-ticker">Tap a player, then tap an action</div>
 
-    <!-- Court-shaped player grid (2-3-2) -->
-    <div class="court-grid">
-        <div class="court-row court-row-attack">
-            <div id="court-slot-GS" class="court-slot" onclick="App.selectMatchPlayer(this, 'GS')"></div>
-            <div id="court-slot-GA" class="court-slot" onclick="App.selectMatchPlayer(this, 'GA')"></div>
-        </div>
-        <div class="court-row court-row-centre">
-            <div id="court-slot-WA" class="court-slot" onclick="App.selectMatchPlayer(this, 'WA')"></div>
-            <div id="court-slot-C" class="court-slot" onclick="App.selectMatchPlayer(this, 'C')"></div>
-            <div id="court-slot-WD" class="court-slot" onclick="App.selectMatchPlayer(this, 'WD')"></div>
-        </div>
-        <div class="court-row court-row-defence">
-            <div id="court-slot-GD" class="court-slot" onclick="App.selectMatchPlayer(this, 'GD')"></div>
-            <div id="court-slot-GK" class="court-slot" onclick="App.selectMatchPlayer(this, 'GK')"></div>
-        </div>
-    </div>
+    <!-- 3-column layout: Players | Shooting | Events -->
+    <div class="match-columns">
+        <!-- Column 1: Players -->
+        <div class="col-players" id="col-players"></div>
 
-    <!-- Action buttons - always visible, split into primary + secondary -->
-    <div id="match-actions" class="match-actions-split">
-        <div id="action-primary" class="action-row-primary"></div>
-        <div id="action-secondary" class="action-row-secondary"></div>
+        <!-- Column 2: Shooting actions -->
+        <div class="col-actions">
+            <div class="col-label">Shooting</div>
+            <div id="actions-shooting" class="action-col-grid"></div>
+            <div class="col-label" style="margin-top:0.3rem">Positive</div>
+            <div id="actions-positive" class="action-col-grid"></div>
+            <div class="col-label" style="margin-top:0.3rem">Negative</div>
+            <div id="actions-negative" class="action-col-grid"></div>
+        </div>
     </div>
 
     <!-- Bottom toolbar -->
