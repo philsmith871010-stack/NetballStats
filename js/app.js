@@ -575,7 +575,6 @@ const App = {
         this.updateTimerDisplay();
         this.updateQuarterDisplay();
         this.renderCourtPlayers();
-        this.renderEventFeed();
         this.cancelPlayerSelection();
 
         this.showView('view-match');
@@ -696,23 +695,30 @@ const App = {
     },
 
     // ==========================================
-    // COURT PLAYER GRID (tap player first)
+    // COURT PLAYER GRID (court-shaped 2-3-2)
     // ==========================================
     renderCourtPlayers() {
-        const grid = document.getElementById('match-court-players');
-        grid.innerHTML = this.POSITIONS.map(pos => {
+        this.POSITIONS.forEach(pos => {
+            const slot = document.getElementById('court-slot-' + pos);
             const player = this.match.court[pos];
-            if (!player) return '';
+            if (!player) {
+                slot.innerHTML = `<span class="cs-pos">${pos}</span><span class="cs-name">--</span>`;
+                slot.dataset.playerId = '';
+                return;
+            }
             const stats = this.match.playerStats[player.id] || {};
             const statLine = this.getPlayerStatLine(stats, pos);
             const numLabel = player.number ? `#${player.number}` : '';
-            return `<button class="court-player-btn" data-player-id="${player.id}"
-                onclick="App.selectMatchPlayer(${player.id}, '${pos}')">
-                <span class="cp-pos">${pos}</span>
-                <span class="cp-name">${numLabel} ${player.name}</span>
-                <span class="cp-stats">${statLine}</span>
-            </button>`;
-        }).join('');
+            slot.dataset.playerId = player.id;
+            slot.innerHTML = `
+                <span class="cs-pos">${pos}</span>
+                <span class="cs-name">${numLabel} ${player.name}</span>
+                <span class="cs-stats">${statLine}</span>
+            `;
+            // Re-apply selected state
+            slot.classList.toggle('selected',
+                this.selectedMatchPlayer && this.selectedMatchPlayer.id === player.id);
+        });
     },
 
     getPlayerStatLine(stats, pos) {
@@ -734,7 +740,16 @@ const App = {
     // PLAYER SELECTION & ACTIONS (2-tap flow)
     // All visible on one screen - tap player, tap action
     // ==========================================
-    selectMatchPlayer(playerId, pos) {
+    selectMatchPlayer(slotOrId, pos) {
+        // Support being called from court-slot onclick (element, pos)
+        let playerId;
+        if (typeof slotOrId === 'object') {
+            playerId = parseInt(slotOrId.dataset.playerId);
+        } else {
+            playerId = slotOrId;
+        }
+        if (isNaN(playerId)) return;
+
         // Toggle off if already selected
         if (this.selectedMatchPlayer && this.selectedMatchPlayer.id === playerId) {
             this.cancelPlayerSelection();
@@ -744,53 +759,62 @@ const App = {
         this.selectedMatchPlayer = { id: playerId, pos };
         const player = this.match.players.find(p => p.id === playerId);
 
-        // Highlight selected
-        document.querySelectorAll('.court-player-btn').forEach(btn => {
-            btn.classList.toggle('selected', parseInt(btn.dataset.playerId) === playerId);
+        // Highlight selected slot
+        document.querySelectorAll('.court-slot').forEach(s => {
+            s.classList.toggle('selected', parseInt(s.dataset.playerId) === playerId);
         });
 
-        // Show selected player bar
-        document.getElementById('selected-player-name').textContent = player.name;
-        document.getElementById('selected-player-pos').textContent = pos;
-        document.getElementById('selected-bar').classList.remove('hidden');
-        document.getElementById('no-selection-hint').classList.add('hidden');
+        // Update ticker to show selected player
+        const ticker = document.getElementById('last-event-ticker');
+        ticker.textContent = `Selected: ${pos} - ${player.name}`;
 
         // Render action buttons for this position
         this.renderActionButtons(pos);
     },
 
+    // PRIMARY actions = Goal, Miss (big buttons for shooters)
+    // SECONDARY actions = everything else (smaller)
+    PRIMARY_ACTIONS: ['goal', 'miss'],
+
     renderActionButtons(pos) {
         const actions = this.trackingLevel === 'basic' ? this.ACTIONS_BASIC : this.ACTIONS_DETAILED;
-        const grid = document.getElementById('action-buttons');
+        const primaryEl = document.getElementById('action-primary');
+        const secondaryEl = document.getElementById('action-secondary');
 
         if (!pos) {
-            // No player selected - show all actions greyed out
-            grid.innerHTML = actions
-                .map(a => `<button class="action-btn ${a.css} disabled" disabled>
-                    <span class="action-icon">${a.icon}</span>
-                    ${a.label}
+            // No player selected - show greyed out
+            const filtered = actions.slice(0, 6); // show first 6 as placeholder
+            primaryEl.innerHTML = filtered.filter(a => this.PRIMARY_ACTIONS.includes(a.key))
+                .map(a => `<button class="action-btn-primary ${a.css} disabled" disabled>
+                    <span class="action-icon">${a.icon}</span> ${a.label}
+                </button>`).join('');
+            secondaryEl.innerHTML = filtered.filter(a => !this.PRIMARY_ACTIONS.includes(a.key))
+                .map(a => `<button class="action-btn-secondary ${a.css} disabled" disabled>
+                    <span class="action-icon">${a.icon}</span> ${a.label}
                 </button>`).join('');
             return;
         }
 
-        grid.innerHTML = actions
-            .filter(a => !a.positions || a.positions.includes(pos))
-            .map(a => `<button class="action-btn ${a.css}" onclick="App.recordAction('${a.key}')">
-                <span class="action-icon">${a.icon}</span>
-                ${a.label}
+        const available = actions.filter(a => !a.positions || a.positions.includes(pos));
+        const primary = available.filter(a => this.PRIMARY_ACTIONS.includes(a.key));
+        const secondary = available.filter(a => !this.PRIMARY_ACTIONS.includes(a.key));
+
+        primaryEl.innerHTML = primary
+            .map(a => `<button class="action-btn-primary ${a.css}" onclick="App.recordAction('${a.key}')">
+                <span class="action-icon">${a.icon}</span> ${a.label}
+            </button>`).join('');
+
+        secondaryEl.innerHTML = secondary
+            .map(a => `<button class="action-btn-secondary ${a.css}" onclick="App.recordAction('${a.key}')">
+                <span class="action-icon">${a.icon}</span> ${a.label}
             </button>`).join('');
     },
 
     cancelPlayerSelection() {
         this.selectedMatchPlayer = null;
-        document.querySelectorAll('.court-player-btn').forEach(btn => btn.classList.remove('selected'));
-        document.getElementById('selected-bar').classList.add('hidden');
-        document.getElementById('no-selection-hint').classList.remove('hidden');
+        document.querySelectorAll('.court-slot').forEach(s => s.classList.remove('selected'));
+        document.getElementById('last-event-ticker').textContent = 'Tap a player, then tap an action';
         this.renderActionButtons(null);
-    },
-
-    toggleFeed() {
-        document.getElementById('match-feed').classList.toggle('hidden');
     },
 
     // ==========================================
@@ -824,19 +848,13 @@ const App = {
             team: 'home',
         };
         this.match.events.push(event);
-        this.renderEventItem(event);
         this.renderCourtPlayers();
 
         // Update undo button
         document.getElementById('btn-undo').disabled = false;
 
-        // Flash feedback - stay on same player for rapid entry
-        this.toast(`${player.name}: ${actionKey.replace('_', ' ')}`, 'success');
-
-        // Re-highlight the selected player (renderCourtPlayers rebuilt the DOM)
-        document.querySelectorAll('.court-player-btn').forEach(btn => {
-            btn.classList.toggle('selected', parseInt(btn.dataset.playerId) === id);
-        });
+        // Flash ticker with feedback - stay on same player for rapid entry
+        this.showTicker(`${pos} ${player.name}: ${actionKey.replace(/_/g, ' ')}`);
     },
 
     recordAwayGoal() {
@@ -855,9 +873,16 @@ const App = {
             team: 'away',
         };
         this.match.events.push(event);
-        this.renderEventItem(event);
         document.getElementById('btn-undo').disabled = false;
-        this.cancelPlayerSelection();
+        this.showTicker(`${this.match.awayTeam} scored`);
+    },
+
+    showTicker(message) {
+        const ticker = document.getElementById('last-event-ticker');
+        ticker.textContent = message;
+        ticker.classList.remove('flash');
+        void ticker.offsetWidth; // force reflow
+        ticker.classList.add('flash');
     },
 
     // ==========================================
@@ -890,75 +915,13 @@ const App = {
         }
 
         this.renderCourtPlayers();
-        this.renderEventFeed();
         document.getElementById('btn-undo').disabled = !this.match.events.length;
-        this.toast('Undone', 'success');
+        this.showTicker('Undone');
     },
 
     // ==========================================
-    // EVENT FEED
+    // EVENT FEED (data only during match, rendered in summary)
     // ==========================================
-    renderEventFeed() {
-        const container = document.getElementById('match-events');
-        container.innerHTML = '';
-        // Show most recent first (last 50)
-        const recent = this.match.events.slice(-50).reverse();
-        recent.forEach(e => this.renderEventItem(e, false));
-    },
-
-    renderEventItem(event, prepend = true) {
-        const container = document.getElementById('match-events');
-        const div = document.createElement('div');
-
-        let cssClass = 'event-system';
-        let icon = '';
-        let text = '';
-
-        if (event.action === 'goal') {
-            cssClass = 'event-goal';
-            icon = '&#9917;';
-            text = `<strong>${event.playerName}</strong> scored (${event.position})`;
-        } else if (event.action === 'miss') {
-            cssClass = 'event-miss';
-            icon = '&#10060;';
-            text = `<strong>${event.playerName}</strong> missed (${event.position})`;
-        } else if (event.action === 'opp_goal') {
-            cssClass = 'event-opp';
-            icon = '&#9917;';
-            text = `<strong>${event.playerName}</strong> scored`;
-        } else if (event.action === 'intercept' || event.action === 'deflection' || event.action === 'rebound' || event.action === 'pickup') {
-            cssClass = 'event-defence';
-            icon = '&#128170;';
-            text = `<strong>${event.playerName}</strong> ${event.action} (${event.position})`;
-        } else if (event.action === 'turnover') {
-            cssClass = 'event-turnover';
-            icon = '&#8635;';
-            text = `<strong>${event.playerName}</strong> turnover (${event.position})`;
-        } else if (event.action === 'system') {
-            cssClass = 'event-system';
-            icon = '&#8505;';
-            text = event.playerName;
-        } else {
-            cssClass = 'event-system';
-            icon = '&#9654;';
-            const label = event.action.replace(/_/g, ' ');
-            text = `<strong>${event.playerName}</strong> ${label} (${event.position || ''})`;
-        }
-
-        div.className = `event-item ${cssClass}`;
-        div.innerHTML = `
-            <span class="event-time">${event.time || ''}</span>
-            <span class="event-icon">${icon}</span>
-            <span class="event-text">${text}</span>
-        `;
-
-        if (prepend) {
-            container.insertBefore(div, container.firstChild);
-        } else {
-            container.appendChild(div);
-        }
-    },
-
     addSystemEvent(message) {
         const event = {
             id: Date.now(),
@@ -971,7 +934,7 @@ const App = {
             team: null,
         };
         if (this.match) this.match.events.push(event);
-        this.renderEventItem(event);
+        this.showTicker(message);
     },
 
     // ==========================================

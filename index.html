@@ -203,47 +203,55 @@
 
 <!-- ======== LIVE MATCH ======== -->
 <div id="view-match" class="view">
-    <!-- Scoreboard -->
-    <div class="match-scoreboard">
-        <div class="score-team">
-            <span class="score-team-name" id="match-home-name">Home</span>
-            <span class="score-value" id="match-home-score">0</span>
+    <!-- Compact Scoreboard -->
+    <div class="match-scoreboard-compact">
+        <div class="sc-home">
+            <span class="sc-name" id="match-home-name">Home</span>
+            <span class="sc-score" id="match-home-score">0</span>
         </div>
-        <div class="score-centre">
-            <span class="score-quarter" id="match-quarter">Q1</span>
-            <span class="score-timer" id="match-timer" onclick="App.toggleTimer()">15:00</span>
-            <span class="timer-hint">tap to start/stop</span>
+        <div class="sc-middle" onclick="App.toggleTimer()">
+            <span class="sc-quarter" id="match-quarter">Q1</span>
+            <span class="sc-timer" id="match-timer">15:00</span>
         </div>
-        <div class="score-team">
-            <span class="score-team-name" id="match-away-name">Away</span>
-            <span class="score-value" id="match-away-score">0</span>
+        <div class="sc-away" onclick="App.recordAwayGoal()">
+            <span class="sc-score" id="match-away-score">0</span>
+            <span class="sc-name" id="match-away-name">Away</span>
+            <span class="sc-tap-hint">tap +1</span>
         </div>
     </div>
 
-    <!-- Player Grid - always visible -->
-    <div id="match-player-grid" class="match-player-grid">
-        <div id="match-court-players" class="court-players"></div>
+    <!-- Last event ticker -->
+    <div id="last-event-ticker" class="last-event-ticker">Tap a player, then tap an action</div>
+
+    <!-- Court-shaped player grid (2-3-2) -->
+    <div class="court-grid">
+        <div class="court-row court-row-attack">
+            <div id="court-slot-GS" class="court-slot" onclick="App.selectMatchPlayer(this, 'GS')"></div>
+            <div id="court-slot-GA" class="court-slot" onclick="App.selectMatchPlayer(this, 'GA')"></div>
+        </div>
+        <div class="court-row court-row-centre">
+            <div id="court-slot-WA" class="court-slot" onclick="App.selectMatchPlayer(this, 'WA')"></div>
+            <div id="court-slot-C" class="court-slot" onclick="App.selectMatchPlayer(this, 'C')"></div>
+            <div id="court-slot-WD" class="court-slot" onclick="App.selectMatchPlayer(this, 'WD')"></div>
+        </div>
+        <div class="court-row court-row-defence">
+            <div id="court-slot-GD" class="court-slot" onclick="App.selectMatchPlayer(this, 'GD')"></div>
+            <div id="court-slot-GK" class="court-slot" onclick="App.selectMatchPlayer(this, 'GK')"></div>
+        </div>
     </div>
 
-    <!-- Selected player indicator -->
-    <div id="selected-bar" class="selected-bar hidden">
-        <span class="pos-badge" id="selected-player-pos">GS</span>
-        <span id="selected-player-name">Player</span>
-    </div>
-    <div id="no-selection-hint" class="no-selection-hint">Tap a player above, then an action below</div>
-
-    <!-- Action buttons - always visible -->
-    <div id="match-actions" class="match-actions-always">
-        <div id="action-buttons" class="action-grid"></div>
+    <!-- Action buttons - always visible, split into primary + secondary -->
+    <div id="match-actions" class="match-actions-split">
+        <div id="action-primary" class="action-row-primary"></div>
+        <div id="action-secondary" class="action-row-secondary"></div>
     </div>
 
-    <!-- Toolbar -->
+    <!-- Bottom toolbar -->
     <div class="match-toolbar-bottom">
-        <button class="btn btn-tool btn-away-goal" onclick="App.recordAwayGoal()">Opp Goal</button>
+        <button class="btn btn-tool btn-away-goal" onclick="App.recordAwayGoal()">+1 Opp</button>
         <button class="btn btn-tool" id="btn-undo" onclick="App.undoLastEvent()" disabled>Undo</button>
         <button class="btn btn-tool" onclick="App.showSubstitution()">Subs</button>
         <button class="btn btn-tool" id="btn-quarter" onclick="App.nextQuarter()">Next Qtr</button>
-        <button class="btn btn-tool" id="btn-feed-toggle" onclick="App.toggleFeed()">Feed</button>
     </div>
 
     <!-- Substitution Panel (overlay) -->
@@ -271,16 +279,8 @@
         </div>
     </div>
 
-    <!-- Event Feed (overlay, toggled) -->
-    <div id="match-feed" class="match-feed-overlay hidden">
-        <div class="match-feed-panel">
-            <div class="subs-header">
-                <h4>Live Feed</h4>
-                <button class="btn btn-small btn-outline" onclick="App.toggleFeed()">Close</button>
-            </div>
-            <div id="match-events" class="event-list"></div>
-        </div>
-    </div>
+    <!-- Hidden event container for data -->
+    <div id="match-events" style="display:none"></div>
 </div>
 
 <!-- ======== MATCH SUMMARY ======== -->
