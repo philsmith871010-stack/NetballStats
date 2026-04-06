@@ -774,41 +774,30 @@ const App = {
 
     renderActionButtons(pos) {
         const actions = this.trackingLevel === 'basic' ? this.ACTIONS_BASIC : this.ACTIONS_DETAILED;
-        const primaryEl = document.getElementById('action-primary');
-        const secondaryEl = document.getElementById('action-secondary');
+        const grid = document.getElementById('action-secondary');
 
         if (!pos) {
-            // No player selected - show greyed out placeholders (always 2 primary + 4 secondary)
-            primaryEl.innerHTML =
-                `<button class="action-btn-primary action-goal disabled" disabled><span class="action-icon">&#9917;</span> Goal</button>` +
-                `<button class="action-btn-primary action-miss disabled" disabled><span class="action-icon">&#10060;</span> Miss</button>`;
-            secondaryEl.innerHTML = actions.filter(a => !this.PRIMARY_ACTIONS.includes(a.key)).slice(0, 4)
-                .map(a => `<button class="action-btn-secondary disabled" disabled>
+            // No player selected — show 6 greyed-out placeholders so layout stays fixed
+            grid.innerHTML = actions.slice(0, 6)
+                .map(a => `<button class="action-btn-secondary ${a.css} disabled" disabled>
                     <span class="action-icon">${a.icon}</span> ${a.label}
                 </button>`).join('');
             return;
         }
 
         const available = actions.filter(a => !a.positions || a.positions.includes(pos));
-        const primary = available.filter(a => this.PRIMARY_ACTIONS.includes(a.key));
-        const secondary = available.filter(a => !this.PRIMARY_ACTIONS.includes(a.key));
 
-        // Always show 2 primary slots (empty/disabled if not a shooter)
-        if (primary.length > 0) {
-            primaryEl.innerHTML = primary
-                .map(a => `<button class="action-btn-primary ${a.css}" onclick="App.recordAction('${a.key}')">
-                    <span class="action-icon">${a.icon}</span> ${a.label}
-                </button>`).join('');
-        } else {
-            primaryEl.innerHTML =
-                `<button class="action-btn-primary action-goal disabled" disabled><span class="action-icon">&#9917;</span> Goal</button>` +
-                `<button class="action-btn-primary action-miss disabled" disabled><span class="action-icon">&#10060;</span> Miss</button>`;
-        }
-
-        secondaryEl.innerHTML = secondary
+        // Render all in one grid — Goal/Miss get their colours, all same size
+        grid.innerHTML = available
             .map(a => `<button class="action-btn-secondary ${a.css}" onclick="App.recordAction('${a.key}')">
                 <span class="action-icon">${a.icon}</span> ${a.label}
             </button>`).join('');
+
+        // Pad to 6 buttons so layout never shifts
+        const pad = 6 - available.length;
+        for (let i = 0; i < pad; i++) {
+            grid.innerHTML += `<button class="action-btn-secondary disabled" disabled>&nbsp;</button>`;
+        }
     },
 
     cancelPlayerSelection() {
