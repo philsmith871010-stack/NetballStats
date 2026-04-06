@@ -8,7 +8,9 @@ let DB = null;
 
 async function initFirebase() {
     try {
-        const module = await import('./firebase.js');
+        // Resolve path relative to the page, not this script
+        const scriptPath = new URL('js/firebase.js', document.baseURI).href;
+        const module = await import(scriptPath);
         DB = module.DB;
         console.log('Firebase connected');
         return true;
