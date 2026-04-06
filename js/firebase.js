@@ -51,6 +51,14 @@ const DB = {
 
     // ---- Live Match (real-time) ----
     async saveLiveMatch(match) {
+        // Build court map { pos: playerName }
+        const court = {};
+        if (match.court) {
+            Object.entries(match.court).forEach(([pos, p]) => {
+                if (p) court[pos] = { id: p.id, name: p.name };
+            });
+        }
+
         await setDoc(doc(db, 'live', 'current'), {
             id: match.id,
             homeTeam: match.homeTeam,
@@ -65,7 +73,8 @@ const DB = {
             status: match.status || 'live',
             playerStats: match.playerStats,
             players: match.players,
-            events: match.events.slice(-20), // last 20 events for feed
+            court: court,
+            events: match.events.slice(-30), // last 30 events for feed
             updatedAt: Date.now()
         });
     },
