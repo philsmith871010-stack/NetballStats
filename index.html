@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#6C2BD9">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
     <title>NetballStats - Live Match Tracker</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -252,6 +257,7 @@
         <button class="btn btn-tool" id="btn-undo" onclick="App.undoLastEvent()" disabled>Undo</button>
         <button class="btn btn-tool" onclick="App.showSubstitution()">Subs</button>
         <button class="btn btn-tool" id="btn-quarter" onclick="App.nextQuarter()">Next Qtr</button>
+        <button class="btn btn-tool btn-whatsapp" onclick="App.shareLiveToWhatsApp()">WA</button>
     </div>
 
     <!-- Substitution Panel (overlay) -->
@@ -302,8 +308,9 @@
         <div id="summary-content"></div>
 
         <div class="summary-actions">
-            <button class="btn btn-primary" onclick="App.exportMatch()">&#128190; Export CSV</button>
+            <button class="btn btn-primary" onclick="App.exportMatch()">&#128190; CSV</button>
             <button class="btn btn-secondary" onclick="App.shareMatch()">&#128228; Share</button>
+            <button class="btn btn-whatsapp-share" onclick="App.shareSummaryToWhatsApp()">WhatsApp</button>
         </div>
     </div>
 </div>
@@ -335,5 +342,10 @@
 </div>
 
 <script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
 </body>
 </html>

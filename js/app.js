@@ -1246,15 +1246,7 @@ const App = {
     shareMatch() {
         const m = this._summaryMatch;
         if (!m) return;
-
-        const goals = Object.values(m.playerStats).reduce((sum, s) => sum + (s.goal || 0), 0);
-        const misses = Object.values(m.playerStats).reduce((sum, s) => sum + (s.miss || 0), 0);
-        const pct = (goals + misses) > 0 ? Math.round((goals / (goals + misses)) * 100) : 0;
-
-        const text = `${m.homeTeam} ${m.homeScore} - ${m.awayScore} ${m.awayTeam}\n` +
-            `${m.date || ''}${m.venue ? ' | ' + m.venue : ''}\n` +
-            `Shooting: ${goals}/${goals + misses} (${pct}%)\n` +
-            m.quarterScores.map((qs, i) => `Q${i + 1}: ${qs.home}-${qs.away}`).join(' | ');
+        const text = this.buildSummaryText(m);
 
         if (navigator.share) {
             navigator.share({ title: 'Match Result', text }).catch(() => {});
@@ -1265,6 +1257,61 @@ const App = {
                 this.toast('Could not copy', 'error');
             });
         }
+    },
+
+    buildSummaryText(m) {
+        const goals = Object.values(m.playerStats).reduce((sum, s) => sum + (s.goal || 0), 0);
+        const misses = Object.values(m.playerStats).reduce((sum, s) => sum + (s.miss || 0), 0);
+        const pct = (goals + misses) > 0 ? Math.round((goals / (goals + misses)) * 100) : 0;
+
+        // Find top scorer
+        let topScorer = '';
+        let topGoals = 0;
+        m.players.forEach(p => {
+            const g = (m.playerStats[p.id] || {}).goal || 0;
+            if (g > topGoals) { topGoals = g; topScorer = p.name; }
+        });
+
+        let text = `${m.homeTeam} ${m.homeScore} - ${m.awayScore} ${m.awayTeam}\n`;
+        text += m.quarterScores.map((qs, i) => `Q${i + 1}: ${qs.home}-${qs.away}`).join(' | ') + '\n';
+        text += `Shooting: ${goals}/${goals + misses} (${pct}%)\n`;
+        if (topScorer) text += `Top scorer: ${topScorer} (${topGoals})\n`;
+        if (m.date) text += `${m.date}`;
+        if (m.venue) text += ` | ${m.venue}`;
+        if (m.competition) text += ` | ${m.competition}`;
+        return text;
+    },
+
+    // WhatsApp sharing
+    openWhatsApp(text) {
+        const encoded = encodeURIComponent(text);
+        window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    },
+
+    shareLiveToWhatsApp() {
+        if (!this.match) return;
+        const m = this.match;
+        const elapsed = this.getMatchTime();
+        let text = `${m.homeTeam} ${m.homeScore} - ${m.awayScore} ${m.awayTeam}\n`;
+        text += `Q${m.quarter} | ${elapsed}\n`;
+
+        // Quick shooting stats
+        let goals = 0, misses = 0;
+        Object.values(m.playerStats).forEach(s => {
+            goals += s.goal || 0;
+            misses += s.miss || 0;
+        });
+        if (goals + misses > 0) {
+            text += `Shooting: ${goals}/${goals + misses} (${Math.round((goals / (goals + misses)) * 100)}%)`;
+        }
+
+        this.openWhatsApp(text);
+    },
+
+    shareSummaryToWhatsApp() {
+        const m = this._summaryMatch;
+        if (!m) return;
+        this.openWhatsApp(this.buildSummaryText(m));
     },
 
     // ==========================================
