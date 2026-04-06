@@ -3,6 +3,21 @@
    Navigation, Teams, Match Engine, Stats
    ======================================== */
 
+// Firebase integration - loaded as module from index.html
+let DB = null;
+
+async function initFirebase() {
+    try {
+        const module = await import('./firebase.js');
+        DB = module.DB;
+        console.log('Firebase connected');
+        return true;
+    } catch (e) {
+        console.warn('Firebase not available, using localStorage fallback:', e.message);
+        return false;
+    }
+}
+
 const App = {
     // ---- State ----
     currentView: 'view-home',
@@ -91,19 +106,29 @@ const App = {
     // ==========================================
     // INIT
     // ==========================================
-    init() {
-        this.loadData();
+    async init() {
+        // Try Firebase first, fall back to localStorage
+        this.useFirebase = await initFirebase();
+        await this.loadData();
         this.seedSampleDataIfEmpty();
         this.showView('view-home');
         document.getElementById('setup-date').value = new Date().toISOString().split('T')[0];
-        // Pre-populate 10 empty player rows on setup
         this.populatePlayerRows('setup-team-players', 10);
     },
 
     // ==========================================
     // DATA PERSISTENCE
     // ==========================================
-    loadData() {
+    async loadData() {
+        if (this.useFirebase) {
+            try {
+                this.teams = await DB.getTeams();
+                this.matches = await DB.getMatches();
+                return;
+            } catch (e) {
+                console.error('Firebase load failed, falling back to localStorage:', e);
+            }
+        }
         try {
             const teamsJson = localStorage.getItem(this.STORAGE_KEYS.teams);
             if (teamsJson) this.teams = JSON.parse(teamsJson);
@@ -218,10 +243,16 @@ const App = {
 
     saveTeams() {
         localStorage.setItem(this.STORAGE_KEYS.teams, JSON.stringify(this.teams));
+        if (this.useFirebase) {
+            this.teams.forEach(t => DB.saveTeam(t).catch(e => console.error('Firebase save team error:', e)));
+        }
     },
 
     saveMatches() {
         localStorage.setItem(this.STORAGE_KEYS.matches, JSON.stringify(this.matches));
+        if (this.useFirebase) {
+            this.matches.forEach(m => DB.saveMatch(m).catch(e => console.error('Firebase save match error:', e)));
+        }
     },
 
     // ==========================================
@@ -376,8 +407,10 @@ const App = {
     deleteTeam(index) {
         this.showConfirm(`Delete team "${this.teams[index].name}"?`, confirmed => {
             if (confirmed) {
+                const teamName = this.teams[index].name;
                 this.teams.splice(index, 1);
                 this.saveTeams();
+                if (this.useFirebase) DB.deleteTeam(teamName).catch(console.error);
                 this.renderSavedTeams();
                 this.toast('Team deleted', 'success');
             }
@@ -688,6 +721,11 @@ const App = {
         this.matches.unshift(saved);
         this.saveMatches();
 
+        // Clear live match for viewers
+        if (this.useFirebase) {
+            DB.clearLiveMatch().catch(console.error);
+        }
+
         this.viewMatchSummary(0);
     },
 
@@ -873,6 +911,17 @@ const App = {
         ticker.classList.remove('flash');
         void ticker.offsetWidth; // force reflow
         ticker.classList.add('flash');
+
+        // Sync live match to Firebase for viewers
+        this.syncLive(message);
+    },
+
+    syncLive(lastEvent) {
+        if (!this.useFirebase || !this.match) return;
+        this.match.lastEvent = lastEvent || '';
+        this.match.timerSeconds = this.timerSeconds;
+        this.match.status = 'live';
+        DB.saveLiveMatch(this.match).catch(e => console.error('Live sync error:', e));
     },
 
     // ==========================================
@@ -1272,6 +1321,22 @@ const App = {
         return text;
     },
 
+    // Live URL
+    getLiveUrl() {
+        const base = window.location.href.replace(/\/[^/]*$/, '');
+        return `${base}/live.html`;
+    },
+
+    shareLiveLink() {
+        const url = this.getLiveUrl();
+        const text = `Watch live: ${this.match.homeTeam} vs ${this.match.awayTeam}\n${url}`;
+        if (navigator.share) {
+            navigator.share({ title: 'Watch Live', text, url }).catch(() => {});
+        } else {
+            this.openWhatsApp(text);
+        }
+    },
+
     // WhatsApp sharing
     openWhatsApp(text) {
         const encoded = encodeURIComponent(text);
@@ -1292,8 +1357,9 @@ const App = {
             misses += s.miss || 0;
         });
         if (goals + misses > 0) {
-            text += `Shooting: ${goals}/${goals + misses} (${Math.round((goals / (goals + misses)) * 100)}%)`;
+            text += `Shooting: ${goals}/${goals + misses} (${Math.round((goals / (goals + misses)) * 100)}%)\n`;
         }
+        text += `\nWatch live: ${this.getLiveUrl()}`;
 
         this.openWhatsApp(text);
     },
@@ -1334,8 +1400,10 @@ const App = {
     deleteMatch(index) {
         this.showConfirm('Delete this match?', confirmed => {
             if (confirmed) {
+                const matchId = this.matches[index].id;
                 this.matches.splice(index, 1);
                 this.saveMatches();
+                if (this.useFirebase) DB.deleteMatch(matchId).catch(console.error);
                 this.renderHistory();
                 this.toast('Match deleted', 'success');
             }

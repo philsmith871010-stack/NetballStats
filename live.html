@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#6C2BD9">
+    <title>NetballStats - Live Score</title>
+    <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+    <style>
+        :root {
+            --primary: #6C2BD9;
+            --primary-dark: #5B21B6;
+            --accent-light: #FCD34D;
+            --success: #10B981;
+            --danger: #EF4444;
+            --bg: #0F172A;
+            --bg-card: #1E293B;
+            --text: #F1F5F9;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            --border: #334155;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--danger);
+            color: #fff;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 1.5rem;
+        }
+        .live-badge .dot {
+            width: 8px; height: 8px;
+            background: #fff;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        .scoreboard {
+            text-align: center;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        .teams {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .team-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .score-display {
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1;
+            margin: 0.5rem 0;
+            font-variant-numeric: tabular-nums;
+        }
+        .score-divider {
+            color: var(--text-dim);
+            padding: 0 0.75rem;
+        }
+        .quarter-info {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--accent-light);
+            letter-spacing: 1px;
+        }
+        .timer-display {
+            font-size: 2rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            margin: 0.25rem 0;
+        }
+        .last-event {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 1.5rem;
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            width: calc(100% - 3rem);
+            max-width: 370px;
+        }
+        .quarter-scores {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+        .qs-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        .qs-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .qs-score {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+        .no-match {
+            text-align: center;
+            padding: 4rem 1.5rem;
+            color: var(--text-dim);
+        }
+        .no-match h2 { color: var(--text-muted); margin-bottom: 0.5rem; }
+        .branding {
+            margin-top: auto;
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+        }
+        .shooting-stat {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="live-view" style="width:100%;display:flex;flex-direction:column;align-items:center">
+        <div class="no-match" id="no-match">
+            <h2>No live match</h2>
+            <p>Waiting for a match to start...</p>
+            <p style="margin-top:1rem;font-size:0.8rem">This page updates automatically</p>
+        </div>
+
+        <div id="match-view" style="display:none;width:100%;max-width:420px">
+            <div style="text-align:center">
+                <span class="live-badge"><span class="dot"></span> Live</span>
+            </div>
+
+            <div class="scoreboard">
+                <div class="teams">
+                    <span class="team-name" id="lv-home-name">Home</span>
+                    <span style="color:var(--text-dim)">vs</span>
+                    <span class="team-name" id="lv-away-name">Away</span>
+                </div>
+                <div class="score-display">
+                    <span id="lv-home-score">0</span>
+                    <span class="score-divider">-</span>
+                    <span id="lv-away-score">0</span>
+                </div>
+                <div class="quarter-info" id="lv-quarter">Q1</div>
+                <div id="lv-shooting" class="shooting-stat"></div>
+            </div>
+
+            <div class="last-event" id="lv-last-event">Match in progress</div>
+
+            <div class="quarter-scores" id="lv-quarters"></div>
+        </div>
+    </div>
+
+    <div class="branding">NetballStats Live</div>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getFirestore, doc, onSnapshot }
+            from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const app = initializeApp({
+            apiKey: "AIzaSyCCCj33LlcJ1yB0SxI6mH8jBm0AT2YB9hQ",
+            authDomain: "netballstats-6a872.firebaseapp.com",
+            projectId: "netballstats-6a872",
+            storageBucket: "netballstats-6a872.firebasestorage.app",
+            messagingSenderId: "340532434363",
+            appId: "1:340532434363:web:763de79b6ca1bd8f04209e"
+        });
+        const db = getFirestore(app);
+
+        const noMatch = document.getElementById('no-match');
+        const matchView = document.getElementById('match-view');
+
+        onSnapshot(doc(db, 'live', 'current'), (snap) => {
+            const d = snap.data();
+            if (!d || d.status === 'none') {
+                noMatch.style.display = '';
+                matchView.style.display = 'none';
+                return;
+            }
+
+            noMatch.style.display = 'none';
+            matchView.style.display = '';
+
+            document.getElementById('lv-home-name').textContent = d.homeTeam || '';
+            document.getElementById('lv-away-name').textContent = d.awayTeam || '';
+            document.getElementById('lv-home-score').textContent = d.homeScore || 0;
+            document.getElementById('lv-away-score').textContent = d.awayScore || 0;
+            document.getElementById('lv-quarter').textContent = `Q${d.quarter || 1}`;
+            document.getElementById('lv-last-event').textContent = d.lastEvent || 'Match in progress';
+
+            // Shooting stats
+            if (d.playerStats) {
+                let goals = 0, misses = 0;
+                Object.values(d.playerStats).forEach(s => {
+                    goals += s.goal || 0;
+                    misses += s.miss || 0;
+                });
+                const attempts = goals + misses;
+                const pct = attempts > 0 ? Math.round((goals / attempts) * 100) : 0;
+                document.getElementById('lv-shooting').textContent =
+                    attempts > 0 ? `Shooting: ${goals}/${attempts} (${pct}%)` : '';
+            }
+
+            // Quarter scores
+            if (d.quarterScores) {
+                document.getElementById('lv-quarters').innerHTML = d.quarterScores
+                    .map((qs, i) => `<div class="qs-card">
+                        <div class="qs-label">Q${i + 1}</div>
+                        <div class="qs-score">${qs.home}-${qs.away}</div>
+                    </div>`).join('');
+            }
+        });
+    </script>
+</body>
+</html>
