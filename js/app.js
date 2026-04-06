@@ -348,11 +348,19 @@ const App = {
         this.setupCompetition = document.getElementById('setup-competition').value.trim();
         this.setupQuarterLength = parseInt(document.getElementById('setup-quarter-length').value);
 
-        // Reset lineup
+        // Auto-assign first 7 players to positions
         this.lineup = {};
-        this.POSITIONS.forEach(pos => {
-            document.getElementById('lineup-' + pos).textContent = 'Tap to assign';
-            document.querySelector(`.position-slot[data-pos="${pos}"]`).classList.remove('assigned');
+        this.POSITIONS.forEach((pos, i) => {
+            if (i < this.setupPlayers.length) {
+                const player = this.setupPlayers[i];
+                this.lineup[pos] = player;
+                const numLabel = player.number ? `#${player.number} ` : '';
+                document.getElementById('lineup-' + pos).textContent = numLabel + player.name;
+                document.querySelector(`.position-slot[data-pos="${pos}"]`).classList.add('assigned');
+            } else {
+                document.getElementById('lineup-' + pos).textContent = 'Tap to assign';
+                document.querySelector(`.position-slot[data-pos="${pos}"]`).classList.remove('assigned');
+            }
         });
 
         this.showView('view-lineup');
