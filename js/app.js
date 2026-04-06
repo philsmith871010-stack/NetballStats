@@ -863,18 +863,6 @@ const App = {
             </div>`;
         });
 
-        // Bench players
-        this.match.players.forEach(p => {
-            if (courtIds.has(p.id)) return;
-            const selected = this.selectedMatchPlayer && this.selectedMatchPlayer.id === p.id;
-            html += `<div class="player-btn zone-bench ${selected ? 'selected' : ''}"
-                data-player-id="${p.id}" data-pos=""
-                onclick="App.selectMatchPlayer(${p.id}, '')">
-                <span class="pb-pos">SUB</span>
-                <span class="pb-name">${p.name}</span>
-            </div>`;
-        });
-
         container.innerHTML = html;
     },
 

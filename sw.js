@@ -1,4 +1,4 @@
-const CACHE_NAME = 'netballstats-v21';
+const CACHE_NAME = 'netballstats-v22';
 const ASSETS = [
   './',
   './index.html',
