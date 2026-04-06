@@ -732,8 +732,15 @@ const App = {
 
     // ==========================================
     // PLAYER SELECTION & ACTIONS (2-tap flow)
+    // All visible on one screen - tap player, tap action
     // ==========================================
     selectMatchPlayer(playerId, pos) {
+        // Toggle off if already selected
+        if (this.selectedMatchPlayer && this.selectedMatchPlayer.id === playerId) {
+            this.cancelPlayerSelection();
+            return;
+        }
+
         this.selectedMatchPlayer = { id: playerId, pos };
         const player = this.match.players.find(p => p.id === playerId);
 
@@ -742,19 +749,29 @@ const App = {
             btn.classList.toggle('selected', parseInt(btn.dataset.playerId) === playerId);
         });
 
-        // Show actions panel
+        // Show selected player bar
         document.getElementById('selected-player-name').textContent = player.name;
         document.getElementById('selected-player-pos').textContent = pos;
-        document.getElementById('match-actions').classList.remove('hidden');
-        document.getElementById('match-player-grid').classList.add('hidden');
+        document.getElementById('selected-bar').classList.remove('hidden');
+        document.getElementById('no-selection-hint').classList.add('hidden');
 
-        // Render action buttons based on position and tracking level
+        // Render action buttons for this position
         this.renderActionButtons(pos);
     },
 
     renderActionButtons(pos) {
         const actions = this.trackingLevel === 'basic' ? this.ACTIONS_BASIC : this.ACTIONS_DETAILED;
         const grid = document.getElementById('action-buttons');
+
+        if (!pos) {
+            // No player selected - show all actions greyed out
+            grid.innerHTML = actions
+                .map(a => `<button class="action-btn ${a.css} disabled" disabled>
+                    <span class="action-icon">${a.icon}</span>
+                    ${a.label}
+                </button>`).join('');
+            return;
+        }
 
         grid.innerHTML = actions
             .filter(a => !a.positions || a.positions.includes(pos))
@@ -767,9 +784,13 @@ const App = {
     cancelPlayerSelection() {
         this.selectedMatchPlayer = null;
         document.querySelectorAll('.court-player-btn').forEach(btn => btn.classList.remove('selected'));
-        document.getElementById('match-actions').classList.add('hidden');
-        document.getElementById('match-player-grid').classList.remove('hidden');
-        this.closeSubs();
+        document.getElementById('selected-bar').classList.add('hidden');
+        document.getElementById('no-selection-hint').classList.remove('hidden');
+        this.renderActionButtons(null);
+    },
+
+    toggleFeed() {
+        document.getElementById('match-feed').classList.toggle('hidden');
     },
 
     // ==========================================
@@ -809,9 +830,13 @@ const App = {
         // Update undo button
         document.getElementById('btn-undo').disabled = false;
 
-        // Flash feedback and return to player grid
+        // Flash feedback - stay on same player for rapid entry
         this.toast(`${player.name}: ${actionKey.replace('_', ' ')}`, 'success');
-        this.cancelPlayerSelection();
+
+        // Re-highlight the selected player (renderCourtPlayers rebuilt the DOM)
+        document.querySelectorAll('.court-player-btn').forEach(btn => {
+            btn.classList.toggle('selected', parseInt(btn.dataset.playerId) === id);
+        });
     },
 
     recordAwayGoal() {
@@ -955,7 +980,6 @@ const App = {
     showSubstitution() {
         this.cancelPlayerSelection();
         this.subState = { playerOff: null, playerOn: null, newPos: null };
-        document.getElementById('match-player-grid').classList.add('hidden');
         document.getElementById('match-subs').classList.remove('hidden');
 
         // Players on court
@@ -1051,7 +1075,6 @@ const App = {
 
     closeSubs() {
         document.getElementById('match-subs').classList.add('hidden');
-        document.getElementById('match-player-grid').classList.remove('hidden');
     },
 
     // ==========================================

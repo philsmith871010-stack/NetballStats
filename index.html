@@ -220,57 +220,66 @@
         </div>
     </div>
 
-    <!-- Toolbar -->
-    <div class="match-toolbar">
-        <button class="btn btn-tool" id="btn-undo" onclick="App.undoLastEvent()" disabled>Undo</button>
-        <button class="btn btn-tool btn-away-goal" onclick="App.recordAwayGoal()">Opp Goal</button>
-        <button class="btn btn-tool" onclick="App.showSubstitution()">Subs</button>
-        <button class="btn btn-tool" id="btn-quarter" onclick="App.nextQuarter()">Next Qtr</button>
-    </div>
-
-    <!-- Player Grid (tap player first) -->
+    <!-- Player Grid - always visible -->
     <div id="match-player-grid" class="match-player-grid">
-        <p class="grid-hint">Tap a player to record a stat</p>
         <div id="match-court-players" class="court-players"></div>
     </div>
 
-    <!-- Action Panel (shown after player selected) -->
-    <div id="match-actions" class="match-actions hidden">
-        <div class="selected-player-bar">
-            <span class="pos-badge" id="selected-player-pos">GS</span>
-            <span id="selected-player-name">Player</span>
-            <button class="btn btn-small btn-outline" onclick="App.cancelPlayerSelection()">Cancel</button>
-        </div>
+    <!-- Selected player indicator -->
+    <div id="selected-bar" class="selected-bar hidden">
+        <span class="pos-badge" id="selected-player-pos">GS</span>
+        <span id="selected-player-name">Player</span>
+    </div>
+    <div id="no-selection-hint" class="no-selection-hint">Tap a player above, then an action below</div>
+
+    <!-- Action buttons - always visible -->
+    <div id="match-actions" class="match-actions-always">
         <div id="action-buttons" class="action-grid"></div>
     </div>
 
-    <!-- Substitution Panel -->
-    <div id="match-subs" class="match-subs hidden">
-        <div class="subs-header">
-            <h3>Substitution</h3>
-            <button class="btn btn-small btn-outline" onclick="App.closeSubs()">Cancel</button>
-        </div>
-        <div class="subs-body">
-            <div class="subs-section">
-                <h4>Player Off (on court)</h4>
-                <div id="subs-on-court" class="subs-grid"></div>
+    <!-- Toolbar -->
+    <div class="match-toolbar-bottom">
+        <button class="btn btn-tool btn-away-goal" onclick="App.recordAwayGoal()">Opp Goal</button>
+        <button class="btn btn-tool" id="btn-undo" onclick="App.undoLastEvent()" disabled>Undo</button>
+        <button class="btn btn-tool" onclick="App.showSubstitution()">Subs</button>
+        <button class="btn btn-tool" id="btn-quarter" onclick="App.nextQuarter()">Next Qtr</button>
+        <button class="btn btn-tool" id="btn-feed-toggle" onclick="App.toggleFeed()">Feed</button>
+    </div>
+
+    <!-- Substitution Panel (overlay) -->
+    <div id="match-subs" class="match-subs-overlay hidden">
+        <div class="match-subs-panel">
+            <div class="subs-header">
+                <h3>Substitution</h3>
+                <button class="btn btn-small btn-outline" onclick="App.closeSubs()">Cancel</button>
             </div>
-            <div class="subs-section">
-                <h4>Player On (bench)</h4>
-                <div id="subs-bench" class="subs-grid"></div>
+            <div class="subs-body">
+                <div class="subs-section">
+                    <h4>Player Off (on court)</h4>
+                    <div id="subs-on-court" class="subs-grid"></div>
+                </div>
+                <div class="subs-section">
+                    <h4>Player On (bench)</h4>
+                    <div id="subs-bench" class="subs-grid"></div>
+                </div>
+                <div class="subs-section">
+                    <h4>Position</h4>
+                    <div id="subs-positions" class="subs-grid"></div>
+                </div>
+                <button class="btn btn-primary" id="btn-confirm-sub" onclick="App.confirmSub()" disabled>Confirm Sub</button>
             </div>
-            <div class="subs-section">
-                <h4>Position</h4>
-                <div id="subs-positions" class="subs-grid"></div>
-            </div>
-            <button class="btn btn-primary" id="btn-confirm-sub" onclick="App.confirmSub()" disabled>Confirm Sub</button>
         </div>
     </div>
 
-    <!-- Event Feed -->
-    <div class="match-feed">
-        <h4>Live Feed</h4>
-        <div id="match-events" class="event-list"></div>
+    <!-- Event Feed (overlay, toggled) -->
+    <div id="match-feed" class="match-feed-overlay hidden">
+        <div class="match-feed-panel">
+            <div class="subs-header">
+                <h4>Live Feed</h4>
+                <button class="btn btn-small btn-outline" onclick="App.toggleFeed()">Close</button>
+            </div>
+            <div id="match-events" class="event-list"></div>
+        </div>
     </div>
 </div>
 
