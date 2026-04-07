@@ -8,7 +8,8 @@
     <title>Hatfield NC U13s - Live Score</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700;800;900&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <style>
         :root {
@@ -17,19 +18,20 @@
             --primary-deeper: #351A56;
             --accent: #C4A265;
             --accent-light: #D4BA85;
-            --success: #10B981;
+            --success: #22C55E;
             --danger: #EF4444;
-            --bg: #0C111B;
-            --bg-card: #161D2E;
+            --bg: #0a0a0c;
+            --bg-card: rgba(30,30,35,0.6);
             --bg-elevated: #1F2937;
             --text: #EAEFF6;
             --text-muted: #8896AB;
             --text-dim: #4B5C73;
-            --border: rgba(255,255,255,0.08);
+            --border: rgba(255,255,255,0.06);
+            --glass: rgba(30,30,35,0.6);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
             letter-spacing: -0.01em;
             background: var(--bg);
@@ -40,14 +42,20 @@
 
         /* ---- Hero Scoreboard ---- */
         .hero {
-            background: linear-gradient(135deg, var(--primary-deeper), var(--primary), var(--primary-dark));
-            padding: 1.5rem 1rem 1.25rem;
+            background: linear-gradient(160deg, var(--primary-deeper), var(--primary));
+            padding: 1.25rem 1rem 1rem;
             text-align: center;
             position: relative;
             overflow: hidden;
         }
         .hero::before {
             content: '';
+            position: absolute;
+            top: -50%; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%);
+            pointer-events: none;
+        }
             position: absolute;
             top: -50%;
             left: -50%;
@@ -94,35 +102,38 @@
             margin-bottom: 0.25rem;
         }
         .team-name {
-            font-size: 0.8rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: rgba(255,255,255,0.7);
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.55);
             max-width: 110px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .vs { color: rgba(255,255,255,0.3); font-size: 0.7rem; }
+        .vs { color: rgba(255,255,255,0.2); font-size: 0.6rem; }
         .score-row {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            margin: 0.25rem 0;
+            margin: 0.15rem 0;
         }
         .score-big {
-            font-size: 4.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 5rem;
             font-weight: 900;
             line-height: 1;
             color: #fff;
             font-variant-numeric: tabular-nums;
-            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            letter-spacing: -3px;
         }
         .score-divider {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 2.5rem;
-            color: rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.12);
             font-weight: 300;
         }
         .quarter-timer {
@@ -130,28 +141,31 @@
             align-items: center;
             justify-content: center;
             gap: 0.75rem;
-            margin-top: 0.25rem;
+            margin-top: 0.2rem;
         }
         .quarter-badge {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.1);
             padding: 0.2rem 0.6rem;
-            border-radius: 6px;
-            font-weight: 800;
-            font-size: 0.85rem;
+            border-radius: 50px;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 0.8rem;
             color: var(--accent-light);
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
         }
         .timer-display {
-            font-size: 1.4rem;
-            font-weight: 800;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: #fff;
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.5px;
         }
         .shooting-pct {
-            font-size: 0.75rem;
-            color: rgba(255,255,255,0.45);
-            font-weight: 600;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: 500;
         }
 
         /* Possession strip */
@@ -181,33 +195,38 @@
         .qs-card {
             flex: 1;
             max-width: 80px;
-            background: var(--bg);
-            border-radius: 8px;
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 10px;
             padding: 0.4rem;
             text-align: center;
             border: 1px solid var(--border);
         }
         .qs-label {
-            font-size: 0.6rem;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.55rem;
             color: var(--text-dim);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 700;
+            letter-spacing: 1.5px;
+            font-weight: 600;
         }
         .qs-score {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 1.1rem;
             font-weight: 800;
             font-variant-numeric: tabular-nums;
+            letter-spacing: -0.5px;
         }
 
         /* ---- Last Event Banner ---- */
         .last-event-banner {
-            padding: 0.6rem 1rem;
+            padding: 0.55rem 1rem;
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text);
-            background: var(--bg-elevated);
+            background: var(--glass);
             border-bottom: 1px solid var(--border);
             transition: all 0.3s;
         }
@@ -230,13 +249,17 @@
         .tabs {
             display: flex;
             border-bottom: 1px solid var(--border);
+            background: var(--glass);
         }
         .tab {
             flex: 1;
             padding: 0.6rem;
             text-align: center;
-            font-size: 0.8rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.75rem;
             font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
             color: var(--text-dim);
             background: none;
             border: none;
@@ -263,11 +286,14 @@
             gap: 0.5rem;
             padding: 0.5rem 0.6rem;
             margin-bottom: 0.3rem;
-            background: var(--bg-card);
-            border-radius: 8px;
-            font-size: 0.85rem;
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 10px;
+            font-size: 0.82rem;
             animation: slideIn 0.3s ease;
             border-left: 3px solid var(--border);
+            border: 1px solid var(--border);
         }
         @keyframes slideIn {
             from { opacity: 0; transform: translateX(-10px); }
@@ -297,9 +323,12 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.6rem 0.75rem;
-            margin-bottom: 0.3rem;
-            background: var(--bg-card);
-            border-radius: 8px;
+            margin-bottom: 0.35rem;
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
         .stat-pos {
             background: var(--accent);
@@ -347,7 +376,8 @@
             color: var(--text);
         }
         .stat-val .label {
-            font-size: 0.55rem;
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--text-dim);
@@ -377,9 +407,13 @@
             padding: 4rem 1.5rem;
         }
         .no-match h2 {
+            font-family: 'Space Grotesk', sans-serif;
             color: var(--text-muted);
             margin-bottom: 0.5rem;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
         }
         .no-match p {
             color: var(--text-dim);
@@ -452,10 +486,11 @@
             border-top: 1px solid var(--border);
         }
         .results-header {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 0.7rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
+            letter-spacing: 2px;
             color: var(--text-dim);
             margin-bottom: 0.6rem;
             padding-left: 0.25rem;
@@ -466,8 +501,10 @@
             gap: 0.5rem;
         }
         .result-card {
-            background: var(--bg-card);
-            border-radius: 10px;
+            background: var(--glass);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
             padding: 0.75rem 1rem;
             border: 1px solid var(--border);
         }
@@ -489,11 +526,13 @@
             border-radius: 4px;
         }
         .result-score {
+            font-family: 'Space Grotesk', sans-serif;
             font-size: 1.6rem;
             font-weight: 900;
             text-align: center;
             margin: 0.15rem 0;
             font-variant-numeric: tabular-nums;
+            letter-spacing: -1px;
         }
         .result-teams {
             text-align: center;

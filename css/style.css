@@ -319,19 +319,22 @@ html:has(#view-match.active) body {
     display: flex;
     align-items: center;
     padding: 0.85rem 1.25rem;
-    background: var(--bg-card);
+    background: rgba(30,30,35,0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-bottom: 1px solid var(--border);
     gap: 0.75rem;
     position: sticky;
     top: 0;
     z-index: 100;
-    backdrop-filter: blur(12px);
 }
 .view-header h2 {
     flex: 1;
-    font-size: 1.1rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: -0.3px;
+    text-transform: uppercase;
 }
 .btn-back {
     background: none;
@@ -493,10 +496,11 @@ html:has(#view-match.active) body {
 /* ---- Forms ---- */
 .form-section { margin-bottom: 1.5rem; }
 .form-section h3 {
-    font-size: 0.7rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.65rem;
     color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: 1.5px;
+    letter-spacing: 2px;
     font-weight: 700;
     margin-bottom: 0.75rem;
     padding-bottom: 0.5rem;
@@ -505,10 +509,11 @@ html:has(#view-match.active) body {
 .form-group { margin-bottom: 0.85rem; }
 .form-group label {
     display: block;
-    font-size: 0.78rem;
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.75rem;
     color: var(--text-muted);
     margin-bottom: 0.3rem;
-    font-weight: 600;
+    font-weight: 500;
 }
 .input-large, select.input-large {
     width: 100%;
@@ -746,13 +751,14 @@ hr {
     max-width: 80px;
 }
 .sc-score {
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 2.4rem;
     font-weight: 900;
     line-height: 1;
     color: #fff;
     min-width: 32px;
     text-align: center;
-    letter-spacing: -1px;
+    letter-spacing: -2px;
 }
 .sc-middle {
     display: flex;
@@ -768,6 +774,7 @@ hr {
     letter-spacing: 1.5px;
 }
 .sc-timer {
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.5rem;
     font-weight: 700;
     color: #fff;
@@ -1123,10 +1130,11 @@ hr {
     font-weight: 700;
 }
 .summary-score .final-score {
-    font-size: 2.8rem;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 3rem;
     font-weight: 900;
     margin: 0.2rem 0;
-    letter-spacing: -1px;
+    letter-spacing: -2px;
     position: relative;
 }
 .summary-score .final-teams {
@@ -1156,9 +1164,11 @@ hr {
     border: none;
     background: var(--bg);
     color: var(--text-dim);
-    font-family: var(--font);
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
     cursor: pointer;
     transition: all var(--transition);
 }
@@ -1227,10 +1237,11 @@ hr {
     font-weight: 700;
 }
 .quarter-card .qc-score {
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.4rem;
     font-weight: 900;
     margin: 0.2rem 0;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
 }
 .quarter-card .qc-detail {
     font-size: 0.65rem;
@@ -1254,7 +1265,9 @@ hr {
     gap: 0.6rem;
 }
 .history-card {
-    background: var(--bg-card);
+    background: rgba(30,30,35,0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-radius: var(--radius);
     padding: 1rem;
     border: 1px solid var(--border);
@@ -1262,12 +1275,13 @@ hr {
     transition: all var(--transition);
 }
 .history-card:active { transform: scale(0.98); }
-.history-card .hc-date { font-size: 0.7rem; color: var(--text-dim); font-weight: 500; }
+.history-card .hc-date { font-family: 'Lexend', sans-serif; font-size: 0.7rem; color: var(--text-dim); font-weight: 500; }
 .history-card .hc-score {
+    font-family: 'Space Grotesk', sans-serif;
     font-size: 1.5rem;
     font-weight: 900;
     margin: 0.2rem 0;
-    letter-spacing: -0.5px;
+    letter-spacing: -1px;
 }
 .history-card .hc-teams { font-size: 0.85rem; color: var(--text-muted); }
 .history-card .hc-comp {

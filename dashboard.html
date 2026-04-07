@@ -8,7 +8,7 @@
     <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700;800;900&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #5B2D8E; --primary-dark: #462170; --primary-deeper: #351A56;
@@ -23,7 +23,7 @@
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             -webkit-font-smoothing: antialiased;
-            background: var(--bg); color: var(--text);
+            background: #0a0a0c; color: var(--text);
             min-height: 100vh; letter-spacing: -0.01em;
         }
 
@@ -35,32 +35,42 @@
             position: relative; overflow: hidden;
         }
         .dash-header::before {
-            content: ''; position: absolute; top: -40%; right: -20%;
-            width: 60%; height: 120%;
+            content: ''; position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 300px;
             background: radial-gradient(circle, rgba(255,255,255,0.05), transparent 70%);
         }
         .dash-header img {
             width: 50px; border-radius: 10px; background: #fff; padding: 3px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.3); margin-bottom: 0.4rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3); margin-bottom: 0.4rem; position: relative;
         }
-        .dash-header h1 { font-size: 1.3rem; font-weight: 800; position: relative; }
-        .dash-header p { font-size: 0.75rem; color: rgba(255,255,255,0.5); font-weight: 500; position: relative; }
+        .dash-header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.5rem; font-weight: 900; position: relative;
+            text-transform: uppercase; letter-spacing: -0.5px;
+        }
+        .dash-header p {
+            font-family: 'Lexend', sans-serif;
+            font-size: 0.7rem; color: rgba(255,255,255,0.45); font-weight: 500; position: relative;
+            letter-spacing: 0.5px;
+        }
 
         /* Section */
         .section { padding: 1rem; }
         .section-title {
-            font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 0.6rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.6rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 2px; color: var(--text-dim); margin-bottom: 0.6rem;
         }
 
         /* Stat Cards Row */
         .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin-bottom: 0.5rem; }
         .stat-card {
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius-sm); padding: 0.6rem; text-align: center;
+            background: rgba(30,30,35,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 0.6rem; text-align: center;
         }
-        .stat-card .big { font-size: 1.8rem; font-weight: 900; line-height: 1; letter-spacing: -1px; }
-        .stat-card .label { font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin-top: 0.15rem; }
+        .stat-card .big { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+        .stat-card .label { font-family: 'Lexend', sans-serif; font-size: 0.55rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 500; margin-top: 0.15rem; }
         .stat-card.win .big { color: var(--success); }
         .stat-card.loss .big { color: var(--danger); }
         .stat-card.accent .big { color: var(--accent-light); }
@@ -101,8 +111,9 @@
         .results { display: flex; flex-direction: column; gap: 0.4rem; }
         .result {
             display: flex; align-items: center; gap: 0.5rem;
-            background: var(--bg-card); border: 1px solid var(--border);
-            border-radius: var(--radius-sm); padding: 0.5rem 0.75rem;
+            background: rgba(30,30,35,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 12px; padding: 0.5rem 0.75rem;
         }
         .result-badge {
             width: 28px; height: 28px; border-radius: 6px;
@@ -112,7 +123,7 @@
         .result-badge.w { background: var(--success); }
         .result-badge.l { background: var(--danger); }
         .result-info { flex: 1; }
-        .result-score { font-weight: 800; font-size: 0.95rem; }
+        .result-score { font-family: 'Space Grotesk', sans-serif; font-weight: 800; font-size: 0.95rem; letter-spacing: -0.3px; }
         .result-opp { font-size: 0.75rem; color: var(--text-muted); }
         .result-meta { font-size: 0.65rem; color: var(--text-dim); }
 
@@ -160,8 +171,11 @@
         /* Tabs */
         .tabs { display: flex; border-bottom: 1px solid var(--border); }
         .tab {
-            flex: 1; padding: 0.55rem; text-align: center; font-size: 0.75rem;
-            font-weight: 700; color: var(--text-dim); background: none; border: none;
+            flex: 1; padding: 0.55rem; text-align: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            color: var(--text-dim); background: none; border: none;
             cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s;
         }
         .tab.active { color: var(--accent-light); border-bottom-color: var(--accent); }
