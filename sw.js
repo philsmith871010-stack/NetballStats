@@ -1,10 +1,12 @@
-const CACHE_NAME = 'netballstats-v31';
+const CACHE_NAME = 'netballstats-v32';
 const ASSETS = [
   './',
   './index.html',
   './live.html',
   './dashboard.html',
   './css/style.css',
+  './css/live-kinetic.css',
+  './css/dash-kinetic.css',
   './js/app.js',
   './js/firebase.js',
   './manifest.json',

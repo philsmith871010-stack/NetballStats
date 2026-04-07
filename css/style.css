@@ -14,14 +14,15 @@
     --success: #22C55E;
     --danger: #EF4444;
     --warning: #F59E0B;
-    --bg: #0C111B;
-    --bg-card: #161D2E;
-    --bg-elevated: #1F2937;
+    --bg: #0e0e10;
+    --bg-card: rgba(25,25,28,0.6);
+    --bg-elevated: rgba(31,31,34,0.8);
     --text: #EAEFF6;
     --text-muted: #8896AB;
     --text-dim: #4B5C73;
-    --border: rgba(255,255,255,0.08);
-    --border-strong: rgba(255,255,255,0.14);
+    --border: rgba(255,255,255,0.05);
+    --border-strong: rgba(255,255,255,0.1);
+    --glass: rgba(25,25,28,0.6);
     --radius: 14px;
     --radius-sm: 10px;
     --radius-xs: 6px;
@@ -437,7 +438,9 @@ html:has(#view-match.active) body {
 }
 .btn-primary:hover { background: var(--primary-light); }
 .btn-secondary {
-    background: var(--bg-elevated);
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     color: var(--text);
     border: 1px solid var(--border);
 }
@@ -772,7 +775,7 @@ hr {
 .match-scoreboard-compact {
     display: flex;
     align-items: center;
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    background: linear-gradient(160deg, #351A56, var(--primary-dark));
     padding: 0.5rem 0.75rem;
     flex-shrink: 0;
 }
@@ -1067,12 +1070,15 @@ hr {
     backdrop-filter: blur(4px);
 }
 .match-subs-panel {
-    background: var(--bg-card);
-    border-radius: var(--radius) var(--radius) 0 0;
+    background: rgba(20,20,24,0.95);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 20px 20px 0 0;
     padding: 1.25rem;
     width: 100%;
     max-height: 80vh;
     overflow-y: auto;
+    border-top: 1px solid rgba(255,255,255,0.08);
 }
 .subs-header {
     display: flex;
@@ -1153,22 +1159,23 @@ hr {
    MATCH SUMMARY
    ======================================== */
 .summary-score {
-    background: linear-gradient(160deg, var(--primary-dark), var(--primary), #7B4FAE);
-    border-radius: var(--radius);
-    padding: 1.25rem;
+    background: linear-gradient(160deg, var(--primary-dark), #351A56);
+    border-radius: 18px;
+    padding: 1.5rem;
     text-align: center;
     margin-bottom: 1rem;
     position: relative;
     overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.05);
 }
 .summary-score::before {
     content: '';
     position: absolute;
-    top: -30%;
-    right: -15%;
-    width: 50%;
-    height: 120%;
-    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    top: -40%;
+    left: 30%;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(123,79,174,0.25), transparent 70%);
 }
 .summary-score .final-label {
     font-size: 0.65rem;
@@ -1389,8 +1396,10 @@ hr {
     gap: 0.5rem;
 }
 .saved-team-card {
-    background: var(--bg-card);
-    border-radius: var(--radius-sm);
+    background: var(--glass);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 14px;
     padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
@@ -1407,14 +1416,17 @@ hr {
     bottom: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
-    background: var(--bg-elevated);
+    background: rgba(25,25,28,0.9);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     color: var(--text);
     padding: 0.65rem 1.1rem;
-    border-radius: var(--radius);
-    font-size: 0.85rem;
+    border-radius: 50px;
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.8rem;
     font-weight: 600;
     z-index: 1000;
-    box-shadow: var(--shadow);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
     animation: toastIn 0.25s ease;
     border: 1px solid var(--border);
 }
@@ -1438,12 +1450,14 @@ hr {
     backdrop-filter: blur(4px);
 }
 .dialog {
-    background: var(--bg-card);
-    border-radius: var(--radius);
+    background: rgba(25,25,28,0.9);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 18px;
     padding: 1.5rem;
     max-width: 320px;
     width: 100%;
-    box-shadow: var(--shadow);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
     border: 1px solid var(--border);
 }
 .dialog p {
