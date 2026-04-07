@@ -13,28 +13,79 @@
     <title>Hatfield NC U13s - Live Stats</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;900&family=Inter:wght@400;500;600;700;800;900&family=Lexend:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
 <!-- ======== LANDING PAGE ======== -->
 <div id="view-landing" class="view active">
-    <header class="app-header">
-        <img src="icons/hatfield.jpg" alt="Hatfield NC" class="app-logo">
-        <p class="subtitle">U13s Purple - Live Stats</p>
-    </header>
-    <div class="home-actions">
-        <button class="btn btn-primary btn-large" onclick="App.enterRecorder()">
-            <span class="btn-icon">&#9997;</span> Record Stats
-        </button>
-        <a class="btn btn-secondary btn-large" href="live.html">
-            <span class="btn-icon">&#128250;</span> Watch Live
-        </a>
-        <a class="btn btn-secondary btn-large" href="dashboard.html">
-            <span class="btn-icon">&#128200;</span> Season Dashboard
-        </a>
+    <div class="landing-page">
+        <!-- Hero -->
+        <section class="landing-hero">
+            <div class="hero-glow"></div>
+            <img src="icons/hatfield.jpg" alt="Hatfield NC" class="landing-logo">
+            <h1 class="landing-title">Hatfield<br><span>Netball Club</span></h1>
+            <p class="landing-sub">U13s Purple Squad</p>
+            <div id="landing-status" class="landing-status"></div>
+        </section>
+
+        <!-- Primary CTA -->
+        <section class="landing-cta">
+            <button class="cta-button" onclick="App.enterRecorder()">
+                <span class="material-symbols-outlined cta-icon">edit_note</span>
+                Record Stats
+            </button>
+        </section>
+
+        <!-- Bento Grid -->
+        <section class="landing-grid">
+            <a href="live.html" class="glass-card card-wide">
+                <div class="card-icon-wrap live-pulse">
+                    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">cell_tower</span>
+                </div>
+                <div>
+                    <h3>Watch Live</h3>
+                    <p>Real-time score updates</p>
+                </div>
+                <span class="material-symbols-outlined card-arrow">chevron_right</span>
+            </a>
+
+            <a href="dashboard.html" class="glass-card card-wide">
+                <div class="card-icon-wrap">
+                    <span class="material-symbols-outlined">analytics</span>
+                </div>
+                <div>
+                    <h3>Season Dashboard</h3>
+                    <p>Performance metrics</p>
+                </div>
+                <span class="material-symbols-outlined card-arrow">chevron_right</span>
+            </a>
+
+            <div class="glass-card card-stat" onclick="App.enterRecorder()">
+                <div class="card-icon-wrap small">
+                    <span class="material-symbols-outlined">history</span>
+                </div>
+                <h3>Match History</h3>
+                <p>Past fixtures</p>
+            </div>
+
+            <div class="glass-card card-stat" onclick="App.enterRecorder()">
+                <div class="card-icon-wrap small">
+                    <span class="material-symbols-outlined">groups</span>
+                </div>
+                <h3>Manage Team</h3>
+                <p>Roster & squad</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <div class="landing-footer">
+            <img src="icons/hatfield.jpg" alt="" class="footer-logo">
+            Hatfield Netball Club
+        </div>
     </div>
-    <div id="landing-status" class="landing-status"></div>
 </div>
 
 <!-- ======== STATISTICIAN GATE ======== -->
