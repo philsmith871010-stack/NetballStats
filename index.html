@@ -21,59 +21,97 @@
 
 <!-- ======== LANDING PAGE ======== -->
 <div id="view-landing" class="view active">
-    <div class="landing-page">
+    <div class="lp">
         <!-- Hero -->
-        <section class="landing-hero">
-            <div class="hero-glow"></div>
-            <img src="icons/hatfield.jpg" alt="Hatfield NC" class="landing-logo">
-            <h1 class="landing-title">Hatfield<br><span>Netball Club</span></h1>
-            <p class="landing-sub">U13s Purple Squad</p>
-            <div id="landing-status" class="landing-status"></div>
-        </section>
-
-        <!-- Primary CTA: Watch Live -->
-        <section class="landing-cta">
-            <a href="live.html" class="cta-button" style="text-decoration:none">
-                <span class="material-symbols-outlined cta-icon" style="font-variation-settings:'FILL' 1">cell_tower</span>
-                Watch Live
-            </a>
+        <section class="lp-hero">
+            <div class="lp-hero-bg"></div>
+            <div class="lp-hero-gradient"></div>
+            <div class="lp-hero-content">
+                <p class="lp-eyebrow">Match Centre</p>
+                <h1 class="lp-title">HATFIELD <span>U13s</span><br><em>PURPLE SQUAD</em></h1>
+                <div id="landing-status" class="landing-status"></div>
+                <div class="lp-hero-cta">
+                    <a href="live.html" class="lp-btn-primary">
+                        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">cell_tower</span>
+                        WATCH LIVE
+                    </a>
+                </div>
+            </div>
         </section>
 
         <!-- Bento Grid -->
-        <section class="landing-grid">
-            <a href="dashboard.html" class="glass-card card-wide">
-                <div class="card-icon-wrap">
-                    <span class="material-symbols-outlined">analytics</span>
+        <section class="lp-grid">
+            <!-- Season at a Glance -->
+            <a href="dashboard.html" class="lp-card lp-card-wide">
+                <div class="lp-card-bg-icon"><span class="material-symbols-outlined">analytics</span></div>
+                <h2 class="lp-card-title">SEASON AT A GLANCE <span class="lp-pulse"></span></h2>
+                <div class="lp-stats-row" id="lp-season-stats">
+                    <div class="lp-stat"><p class="lp-stat-label">Record</p><p class="lp-stat-val">6W 2L</p></div>
+                    <div class="lp-stat"><p class="lp-stat-label">Shooting</p><p class="lp-stat-val">74%</p></div>
+                    <div class="lp-stat"><p class="lp-stat-label">Goals For</p><p class="lp-stat-val">220</p></div>
+                    <div class="lp-stat"><p class="lp-stat-label">Diff</p><p class="lp-stat-val accent">+36</p></div>
                 </div>
-                <div>
-                    <h3>Season Dashboard</h3>
-                    <p>Performance metrics</p>
+                <div class="lp-card-footer">
+                    <span class="lp-card-hint">Full dashboard</span>
+                    <span class="material-symbols-outlined lp-arrow">arrow_forward</span>
                 </div>
-                <span class="material-symbols-outlined card-arrow">chevron_right</span>
             </a>
 
-            <div class="glass-card card-stat" onclick="App.enterRecorder()">
-                <div class="card-icon-wrap small recorder-icon">
-                    <span class="material-symbols-outlined">edit_note</span>
+            <!-- Record Stats -->
+            <div class="lp-card lp-card-tall" onclick="App.enterRecorder()">
+                <span class="material-symbols-outlined lp-card-icon">edit_note</span>
+                <h3 class="lp-card-title">RECORD STATS</h3>
+                <p class="lp-card-desc">Statistician access only</p>
+                <div class="lp-card-footer">
+                    <span class="lp-card-hint">Start recording</span>
+                    <span class="material-symbols-outlined lp-arrow">arrow_forward</span>
                 </div>
-                <h3>Record Stats</h3>
-                <p>Statistician only</p>
             </div>
 
-            <a href="live.html" class="glass-card card-stat">
-                <div class="card-icon-wrap small">
-                    <span class="material-symbols-outlined">history</span>
+            <!-- Season Dashboard -->
+            <a href="dashboard.html" class="lp-card lp-card-tall">
+                <span class="material-symbols-outlined lp-card-icon">dashboard</span>
+                <h3 class="lp-card-title">DASHBOARD</h3>
+                <p class="lp-card-desc">Player performance & trends</p>
+                <div class="lp-card-footer">
+                    <span class="lp-card-hint">View stats</span>
+                    <span class="material-symbols-outlined lp-arrow">arrow_forward</span>
                 </div>
-                <h3>Match History</h3>
-                <p>Past results</p>
+            </a>
+
+            <!-- Match History -->
+            <a href="live.html" class="lp-card lp-card-wide lp-card-history">
+                <div class="lp-card-main">
+                    <span class="material-symbols-outlined lp-card-icon">history</span>
+                    <h3 class="lp-card-title">MATCH HISTORY</h3>
+                    <p class="lp-card-desc">Play-by-play, stats & results</p>
+                </div>
+                <div class="lp-card-footer">
+                    <span class="lp-card-hint">View all matches</span>
+                    <span class="material-symbols-outlined lp-arrow">arrow_forward</span>
+                </div>
             </a>
         </section>
 
-        <!-- Footer -->
-        <div class="landing-footer">
-            <img src="icons/hatfield.jpg" alt="" class="footer-logo">
-            Hatfield Netball Club
-        </div>
+        <!-- Bottom Nav -->
+        <nav class="lp-bottom-nav">
+            <a href="live.html" class="lp-nav-item active">
+                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">cell_tower</span>
+                <span>Live</span>
+            </a>
+            <a href="dashboard.html" class="lp-nav-item">
+                <span class="material-symbols-outlined">analytics</span>
+                <span>Stats</span>
+            </a>
+            <a href="live.html" class="lp-nav-item">
+                <span class="material-symbols-outlined">history</span>
+                <span>History</span>
+            </a>
+            <div class="lp-nav-item" onclick="App.enterRecorder()">
+                <span class="material-symbols-outlined">edit_note</span>
+                <span>Record</span>
+            </div>
+        </nav>
     </div>
 </div>
 
