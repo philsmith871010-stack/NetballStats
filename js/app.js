@@ -122,8 +122,11 @@ const App = {
         this.seedSampleDataIfEmpty();
 
         // Restore live match if browser was refreshed mid-game
-        if (!this.restoreMatchState()) {
-            this.showView('view-home');
+        if (this.restoreMatchState()) {
+            // Already in match view
+        } else {
+            this.showView('view-landing');
+            this.checkLandingStatus();
         }
 
         document.getElementById('setup-date').value = new Date().toISOString().split('T')[0];
@@ -1065,6 +1068,7 @@ const App = {
         this.match.lastEvent = lastEvent || '';
         this.match.timerSeconds = this.timerSeconds;
         this.match.status = 'live';
+        this.match.statistician = this.statisticianName || null;
 
         // Always save locally so refresh doesn't lose data
         this.saveMatchState();
@@ -1697,6 +1701,81 @@ const App = {
             this._confirmCallback = null;
         }
     }
+    // ==========================================
+    // STATISTICIAN LOCK
+    // ==========================================
+    statisticianName: null,
+
+    async enterRecorder() {
+        if (!this.useFirebase) {
+            this.showView('view-home');
+            return;
+        }
+        const lock = await DB.getStatistician();
+        const myName = localStorage.getItem('netballstats_stat_name');
+
+        if (lock && lock.active) {
+            if (myName && lock.name === myName) {
+                // I'm the current statistician
+                this.statisticianName = myName;
+                document.getElementById('gate-available').style.display = 'none';
+                document.getElementById('gate-locked').style.display = 'none';
+                document.getElementById('gate-mine').style.display = '';
+            } else {
+                // Someone else is recording
+                document.getElementById('gate-available').style.display = 'none';
+                document.getElementById('gate-locked').style.display = '';
+                document.getElementById('gate-mine').style.display = 'none';
+                document.getElementById('gate-locked-msg').textContent =
+                    `${lock.name} is currently recording stats`;
+            }
+        } else {
+            // Available
+            document.getElementById('gate-available').style.display = '';
+            document.getElementById('gate-locked').style.display = 'none';
+            document.getElementById('gate-mine').style.display = 'none';
+            if (myName) document.getElementById('stat-name').value = myName;
+        }
+        this.showView('view-gate');
+    },
+
+    async claimStatistician() {
+        const name = document.getElementById('stat-name').value.trim();
+        if (!name) { this.toast('Enter your name', 'error'); return; }
+
+        this.statisticianName = name;
+        localStorage.setItem('netballstats_stat_name', name);
+
+        if (this.useFirebase) {
+            await DB.claimStatistician(name);
+        }
+        document.getElementById('stat-name-badge').textContent = name;
+        this.showView('view-home');
+        this.toast(`Recording as ${name}`, 'success');
+    },
+
+    async releaseStatistician() {
+        this.statisticianName = null;
+        if (this.useFirebase) {
+            await DB.releaseStatistician();
+        }
+        this.toast('Control released', 'success');
+        this.showView('view-landing');
+    },
+
+    async checkLandingStatus() {
+        if (!this.useFirebase) return;
+        const lock = await DB.getStatistician();
+        const el = document.getElementById('landing-status');
+        if (lock && lock.active && lock.name) {
+            el.innerHTML = `<div class="landing-stat-active">
+                <span class="landing-stat-dot"></span>
+                Stats by <strong>${lock.name}</strong>
+            </div>`;
+        } else {
+            el.innerHTML = '';
+        }
+    },
 };
 
 // Boot

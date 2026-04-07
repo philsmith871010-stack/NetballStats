@@ -17,19 +17,67 @@
 </head>
 <body>
 
-<!-- ======== HOME ======== -->
-<div id="view-home" class="view active">
+<!-- ======== LANDING PAGE ======== -->
+<div id="view-landing" class="view active">
     <header class="app-header">
         <img src="icons/hatfield.jpg" alt="Hatfield NC" class="app-logo">
         <p class="subtitle">U13s Purple - Live Stats</p>
     </header>
     <div class="home-actions">
-        <button class="btn btn-primary btn-large" onclick="App.showView('view-setup-team')">
-            <span class="btn-icon">+</span> New Match
+        <button class="btn btn-primary btn-large" onclick="App.enterRecorder()">
+            <span class="btn-icon">&#9997;</span> Record Stats
         </button>
+        <a class="btn btn-secondary btn-large" href="live.html">
+            <span class="btn-icon">&#128250;</span> Watch Live
+        </a>
         <a class="btn btn-secondary btn-large" href="dashboard.html">
             <span class="btn-icon">&#128200;</span> Season Dashboard
         </a>
+    </div>
+    <div id="landing-status" class="landing-status"></div>
+</div>
+
+<!-- ======== STATISTICIAN GATE ======== -->
+<div id="view-gate" class="view">
+    <div class="view-header">
+        <button class="btn-back" onclick="App.showView('view-landing')">&larr;</button>
+        <h2>Record Stats</h2>
+    </div>
+    <div class="view-body padded">
+        <div id="gate-available" style="display:none">
+            <div class="form-section">
+                <h3>Today's Statistician</h3>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="stat-name" class="input-large" placeholder="e.g. Phil">
+                </div>
+            </div>
+            <button class="btn btn-primary btn-large" onclick="App.claimStatistician()">Start Recording</button>
+        </div>
+        <div id="gate-locked" class="gate-locked" style="display:none">
+            <div class="gate-icon">&#128274;</div>
+            <p id="gate-locked-msg">Someone is already recording</p>
+            <p class="hint" style="margin-top:0.5rem">They need to finish or release before you can take over</p>
+        </div>
+        <div id="gate-mine" style="display:none">
+            <p style="text-align:center;margin-bottom:1rem">You're the active statistician</p>
+            <button class="btn btn-primary btn-large" onclick="App.showView('view-home')">Continue Recording</button>
+            <button class="btn btn-outline btn-large" style="margin-top:0.5rem" onclick="App.releaseStatistician()">Release Control</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======== HOME (recorder menu) ======== -->
+<div id="view-home" class="view">
+    <div class="view-header">
+        <button class="btn-back" onclick="App.showView('view-landing')">&larr;</button>
+        <h2>Match Stats</h2>
+        <span id="stat-name-badge" class="stat-badge"></span>
+    </div>
+    <div class="home-actions">
+        <button class="btn btn-primary btn-large" onclick="App.showView('view-setup-team')">
+            <span class="btn-icon">+</span> New Match
+        </button>
         <button class="btn btn-secondary btn-large" onclick="App.showView('view-history')">
             <span class="btn-icon">&#128203;</span> Match History
         </button>
@@ -37,7 +85,11 @@
             <span class="btn-icon">&#9881;</span> Manage Teams
         </button>
     </div>
-    <div class="home-footer"><p>Tap <strong>New Match</strong> to get started</p></div>
+    <div style="padding:0 1.25rem">
+        <button class="btn btn-outline btn-large" onclick="App.releaseStatistician()">
+            Release Control
+        </button>
+    </div>
 </div>
 
 <!-- ======== MANAGE TEAMS ======== -->

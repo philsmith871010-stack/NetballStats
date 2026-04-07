@@ -80,6 +80,12 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
         }
+        .statistician-name {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: 500;
+            margin-bottom: 0.3rem;
+        }
         .teams-row {
             display: flex;
             align-items: center;
@@ -599,6 +605,7 @@
     <div class="hero">
         <img src="icons/hatfield.jpg" alt="Hatfield NC" class="hero-logo">
         <div class="live-badge"><span class="dot"></span> Live</div>
+        <div class="statistician-name" id="lv-statistician"></div>
         <div class="teams-row">
             <span class="team-name" id="lv-home-name">Home</span>
             <span class="vs">vs</span>
@@ -738,6 +745,8 @@
 
         // Scoreboard
         document.getElementById('lv-home-name').textContent = d.homeTeam || '';
+        document.getElementById('lv-statistician').textContent =
+            d.statistician ? `Stats by ${d.statistician}` : '';
         document.getElementById('lv-away-name').textContent = d.awayTeam || '';
         document.getElementById('lv-home-score').textContent = d.homeScore || 0;
         document.getElementById('lv-away-score').textContent = d.awayScore || 0;

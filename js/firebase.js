@@ -71,6 +71,7 @@ const DB = {
             quarterLength: match.quarterLength,
             lastEvent: match.lastEvent || '',
             status: match.status || 'live',
+            statistician: match.statistician || null,
             playerStats: match.playerStats,
             players: match.players,
             court: court,
@@ -84,7 +85,31 @@ const DB = {
     },
 
     async clearLiveMatch() {
-        await setDoc(doc(db, 'live', 'current'), { status: 'none' });
+        await setDoc(doc(db, 'live', 'current'), { status: 'none', statistician: null });
+    },
+
+    // Statistician lock
+    async claimStatistician(name) {
+        await setDoc(doc(db, 'live', 'lock'), {
+            name,
+            claimedAt: Date.now(),
+            active: true
+        });
+    },
+
+    async releaseStatistician() {
+        await setDoc(doc(db, 'live', 'lock'), { active: false, name: null });
+    },
+
+    async getStatistician() {
+        const snap = await getDoc(doc(db, 'live', 'lock'));
+        return snap.exists() ? snap.data() : null;
+    },
+
+    onStatistician(callback) {
+        return onSnapshot(doc(db, 'live', 'lock'), (snap) => {
+            callback(snap.exists() ? snap.data() : null);
+        });
     },
 
     // Subscribe to live match updates (for viewer)
