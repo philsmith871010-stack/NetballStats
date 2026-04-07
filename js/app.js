@@ -1700,7 +1700,7 @@ const App = {
             this._confirmCallback(result);
             this._confirmCallback = null;
         }
-    }
+    },
     // ==========================================
     // STATISTICIAN LOCK
     // ==========================================
