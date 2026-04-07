@@ -1648,18 +1648,24 @@ const App = {
             return;
         }
         empty.classList.add('hidden');
-        container.innerHTML = this.matches.map((m, i) => `
-            <div class="history-card" onclick="App.viewMatchSummary(${i})">
-                <div class="hc-date">${m.date || 'Unknown date'}${m.venue ? ' - ' + m.venue : ''}</div>
+        container.innerHTML = this.matches.map((m, i) => {
+            const won = m.homeScore > m.awayScore;
+            const resultClass = won ? 'hc-win' : 'hc-loss';
+            const badge = won ? '<span class="hc-badge hc-badge-w">W</span>' : '<span class="hc-badge hc-badge-l">L</span>';
+            return `<div class="history-card ${resultClass}" onclick="App.viewMatchSummary(${i})">
+                <div class="hc-top">
+                    ${badge}
+                    <span class="hc-date">${m.date || ''}${m.venue ? ' · ' + m.venue : ''}</span>
+                    ${m.competition ? `<span class="hc-comp">${m.competition}</span>` : ''}
+                </div>
                 <div class="hc-score">${m.homeScore} - ${m.awayScore}</div>
                 <div class="hc-teams">${m.homeTeam} vs ${m.awayTeam}</div>
-                ${m.competition ? `<div class="hc-comp">${m.competition}</div>` : ''}
                 <div class="hc-actions">
                     <button class="btn btn-small btn-outline" onclick="event.stopPropagation(); App.viewMatchSummary(${i})">View</button>
                     <button class="btn btn-small btn-danger" onclick="event.stopPropagation(); App.deleteMatch(${i})">Delete</button>
                 </div>
-            </div>
-        `).join('');
+            </div>`;
+        }).join('');
     },
 
     deleteMatch(index) {
@@ -1705,6 +1711,16 @@ const App = {
     // STATISTICIAN LOCK
     // ==========================================
     statisticianName: null,
+
+    goHome() {
+        if (this.match) {
+            this.showConfirm('Leave recorder? A match is in progress — data may be lost.', confirmed => {
+                if (confirmed) this.showView('view-landing');
+            });
+        } else {
+            this.showView('view-landing');
+        }
+    },
 
     async enterRecorder() {
         if (!this.useFirebase) {

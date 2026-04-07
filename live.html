@@ -40,6 +40,38 @@
             overflow-x: hidden;
         }
 
+        /* ---- Page Nav ---- */
+        .page-nav {
+            display: flex;
+            align-items: center;
+            padding: 0.6rem 1rem;
+            background: rgba(30,30,35,0.8);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 200;
+        }
+        .nav-back {
+            color: var(--accent-light);
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .nav-title {
+            flex: 1;
+            text-align: center;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-muted);
+            margin-right: 3rem; /* offset for centering */
+        }
+
         /* ---- Hero Scoreboard ---- */
         .hero {
             background: linear-gradient(160deg, var(--primary-deeper), var(--primary));
@@ -632,6 +664,11 @@
     </style>
 </head>
 <body>
+
+<nav class="page-nav">
+    <a href="index.html" class="nav-back">&larr; Home</a>
+    <span class="nav-title">Live</span>
+</nav>
 
 <div id="no-match" class="no-match">
     <img src="icons/hatfield.jpg" alt="Hatfield NC" class="no-match-logo">

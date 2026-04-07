@@ -1275,7 +1275,45 @@ hr {
     transition: all var(--transition);
 }
 .history-card:active { transform: scale(0.98); }
-.history-card .hc-date { font-family: 'Lexend', sans-serif; font-size: 0.7rem; color: var(--text-dim); font-weight: 500; }
+/* Win/Loss card accents */
+.history-card.hc-win {
+    border-left: 4px solid var(--success);
+}
+.history-card.hc-loss {
+    border-left: 4px solid var(--danger);
+}
+.hc-top {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.15rem;
+}
+.hc-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 900;
+    color: #fff;
+    flex-shrink: 0;
+}
+.hc-badge-w { background: var(--success); }
+.hc-badge-l { background: var(--danger); }
+.history-card .hc-date { font-family: 'Lexend', sans-serif; font-size: 0.65rem; color: var(--text-dim); font-weight: 500; }
+.history-card .hc-comp {
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.6rem;
+    color: var(--accent-light);
+    background: rgba(196,162,101,0.1);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-left: auto;
+}
 .history-card .hc-score {
     font-family: 'Space Grotesk', sans-serif;
     font-size: 1.5rem;
@@ -1284,11 +1322,6 @@ hr {
     letter-spacing: -1px;
 }
 .history-card .hc-teams { font-size: 0.85rem; color: var(--text-muted); }
-.history-card .hc-comp {
-    font-size: 0.7rem;
-    color: var(--text-dim);
-    margin-top: 0.2rem;
-}
 .history-card .hc-actions {
     margin-top: 0.5rem;
     display: flex;

@@ -27,6 +27,21 @@
             min-height: 100vh; letter-spacing: -0.01em;
         }
 
+        /* Page Nav */
+        .page-nav {
+            display: flex; align-items: center; padding: 0.6rem 1rem;
+            background: rgba(30,30,35,0.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(255,255,255,0.06); position: sticky; top: 0; z-index: 200;
+        }
+        .nav-back {
+            color: var(--accent-light); text-decoration: none; font-size: 0.85rem; font-weight: 600;
+        }
+        .nav-title {
+            flex: 1; text-align: center; font-family: 'Space Grotesk', sans-serif;
+            font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--text-muted); margin-right: 3rem;
+        }
+
         /* Header */
         .dash-header {
             background: linear-gradient(160deg, var(--primary-deeper), var(--primary));
@@ -190,6 +205,11 @@
     </style>
 </head>
 <body>
+
+<nav class="page-nav">
+    <a href="index.html" class="nav-back">&larr; Home</a>
+    <span class="nav-title">Dashboard</span>
+</nav>
 
 <div class="dash-header">
     <img src="icons/hatfield.jpg" alt="Hatfield NC">

@@ -110,24 +110,24 @@
 <!-- ======== HOME (recorder menu) ======== -->
 <div id="view-home" class="view">
     <div class="view-header">
-        <button class="btn-back" onclick="App.showView('view-landing')">&larr;</button>
+        <button class="btn-back" onclick="App.goHome()">&larr;</button>
         <h2>Match Stats</h2>
         <span id="stat-name-badge" class="stat-badge"></span>
     </div>
     <div class="home-actions">
         <button class="btn btn-primary btn-large" onclick="App.showView('view-setup-team')">
-            <span class="btn-icon">+</span> New Match
+            <span class="material-symbols-outlined" style="font-size:1.3rem">add_circle</span> New Match
         </button>
         <button class="btn btn-secondary btn-large" onclick="App.showView('view-history')">
-            <span class="btn-icon">&#128203;</span> Match History
+            <span class="material-symbols-outlined" style="font-size:1.3rem">history</span> Match History
         </button>
         <button class="btn btn-secondary btn-large" onclick="App.showView('view-manage-teams')">
-            <span class="btn-icon">&#9881;</span> Manage Teams
+            <span class="material-symbols-outlined" style="font-size:1.3rem">groups</span> Manage Teams
         </button>
     </div>
     <div style="padding:0 1.25rem">
         <button class="btn btn-outline btn-large" onclick="App.releaseStatistician()">
-            Release Control
+            <span class="material-symbols-outlined" style="font-size:1.2rem">logout</span> Release Control
         </button>
     </div>
 </div>
