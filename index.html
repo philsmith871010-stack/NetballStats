@@ -31,27 +31,16 @@
             <div id="landing-status" class="landing-status"></div>
         </section>
 
-        <!-- Primary CTA -->
+        <!-- Primary CTA: Watch Live -->
         <section class="landing-cta">
-            <button class="cta-button" onclick="App.enterRecorder()">
-                <span class="material-symbols-outlined cta-icon">edit_note</span>
-                Record Stats
-            </button>
+            <a href="live.html" class="cta-button" style="text-decoration:none">
+                <span class="material-symbols-outlined cta-icon" style="font-variation-settings:'FILL' 1">cell_tower</span>
+                Watch Live
+            </a>
         </section>
 
         <!-- Bento Grid -->
         <section class="landing-grid">
-            <a href="live.html" class="glass-card card-wide">
-                <div class="card-icon-wrap live-pulse">
-                    <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">cell_tower</span>
-                </div>
-                <div>
-                    <h3>Watch Live</h3>
-                    <p>Real-time score updates</p>
-                </div>
-                <span class="material-symbols-outlined card-arrow">chevron_right</span>
-            </a>
-
             <a href="dashboard.html" class="glass-card card-wide">
                 <div class="card-icon-wrap">
                     <span class="material-symbols-outlined">analytics</span>
@@ -64,20 +53,20 @@
             </a>
 
             <div class="glass-card card-stat" onclick="App.enterRecorder()">
+                <div class="card-icon-wrap small recorder-icon">
+                    <span class="material-symbols-outlined">edit_note</span>
+                </div>
+                <h3>Record Stats</h3>
+                <p>Statistician only</p>
+            </div>
+
+            <a href="live.html" class="glass-card card-stat">
                 <div class="card-icon-wrap small">
                     <span class="material-symbols-outlined">history</span>
                 </div>
                 <h3>Match History</h3>
-                <p>Past fixtures</p>
-            </div>
-
-            <div class="glass-card card-stat" onclick="App.enterRecorder()">
-                <div class="card-icon-wrap small">
-                    <span class="material-symbols-outlined">groups</span>
-                </div>
-                <h3>Manage Team</h3>
-                <p>Roster & squad</p>
-            </div>
+                <p>Past results</p>
+            </a>
         </section>
 
         <!-- Footer -->
