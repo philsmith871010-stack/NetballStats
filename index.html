@@ -409,6 +409,10 @@
 <script src="js/app.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
+    // Force update: unregister old, register fresh
+    navigator.serviceWorker.getRegistrations().then(regs => {
+      regs.forEach(r => r.update());
+    });
     navigator.serviceWorker.register('sw.js');
   }
 </script>
