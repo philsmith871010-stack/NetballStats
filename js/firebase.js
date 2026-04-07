@@ -74,7 +74,11 @@ const DB = {
             playerStats: match.playerStats,
             players: match.players,
             court: court,
-            events: match.events.slice(-30), // last 30 events for feed
+            courtTime: match.courtTime || {},
+            cpToGoal: match.cpToGoal || 0,
+            toToGoal: match.toToGoal || 0,
+            quarterComments: match.quarterComments || {},
+            events: match.events.slice(-30),
             updatedAt: Date.now()
         });
     },

@@ -254,6 +254,7 @@
         <button class="btn btn-tool btn-away-goal" onclick="App.recordAwayGoal()">+1 Opp</button>
         <button class="btn btn-tool" id="btn-undo" onclick="App.undoLastEvent()" disabled>Undo</button>
         <button class="btn btn-tool" onclick="App.showSubstitution()">Subs</button>
+        <button class="btn btn-tool" onclick="App.showSwapPositions()">Swap</button>
         <button class="btn btn-tool" id="btn-quarter" onclick="App.nextQuarter()">Next Qtr</button>
         <button class="btn btn-tool btn-whatsapp" onclick="App.shareLiveLink()">Share</button>
         <button class="btn btn-tool btn-abandon" onclick="App.abandonMatch()">&#10005;</button>
@@ -281,6 +282,19 @@
                 </div>
                 <button class="btn btn-primary" id="btn-confirm-sub" onclick="App.confirmSub()" disabled>Confirm Sub</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Position Swap Overlay -->
+    <div id="match-swap" class="match-subs-overlay hidden">
+        <div class="match-subs-panel">
+            <div class="subs-header">
+                <h3>Swap Positions</h3>
+                <button class="btn btn-small btn-outline" onclick="App.closeSwap()">Cancel</button>
+            </div>
+            <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem">Tap two players to swap their positions</p>
+            <div id="swap-players" class="subs-grid"></div>
+            <button class="btn btn-primary" id="btn-confirm-swap" onclick="App.confirmSwap()" disabled style="margin-top:0.75rem">Confirm Swap</button>
         </div>
     </div>
 

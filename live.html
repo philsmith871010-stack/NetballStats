@@ -135,11 +135,33 @@
             color: var(--accent-light);
             letter-spacing: 1px;
         }
+        .timer-display {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #fff;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.5px;
+        }
         .shooting-pct {
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.5);
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.45);
             font-weight: 600;
         }
+
+        /* Possession strip */
+        .possession-strip {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 0.3rem 0.5rem;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+        .possession-strip span { letter-spacing: 0.3px; }
+        .possession-strip .poss-val { color: var(--accent-light); font-weight: 800; }
 
         /* ---- Quarter Score Strip ---- */
         .quarter-strip {
@@ -287,6 +309,19 @@
             flex: 1;
             font-weight: 700;
             font-size: 0.9rem;
+        }
+        .stat-index {
+            font-size: 1.1rem;
+            font-weight: 900;
+            min-width: 28px;
+            text-align: center;
+        }
+        .stat-mins {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            font-weight: 600;
+            min-width: 28px;
+            text-align: center;
         }
         .stat-values {
             display: flex;
@@ -576,12 +611,14 @@
         </div>
         <div class="quarter-timer">
             <span class="quarter-badge" id="lv-quarter">Q1</span>
+            <span class="timer-display" id="lv-timer"></span>
             <span class="shooting-pct" id="lv-shooting"></span>
         </div>
     </div>
 
-    <!-- Quarter Scores -->
+    <!-- Quarter Scores + Possession Stats -->
     <div class="quarter-strip" id="lv-quarters"></div>
+    <div class="possession-strip" id="lv-possession"></div>
 
     <!-- Last Event -->
     <div class="last-event-banner" id="lv-last-event">Match in progress</div>
@@ -706,18 +743,33 @@
         document.getElementById('lv-away-score').textContent = d.awayScore || 0;
         document.getElementById('lv-quarter').textContent = `Q${d.quarter || 1}`;
 
-        // Shooting %
-        if (d.playerStats) {
-            let goals = 0, misses = 0;
-            Object.values(d.playerStats).forEach(s => {
-                goals += s.goal || 0;
-                misses += s.miss || 0;
-            });
-            const attempts = goals + misses;
-            const pct = attempts > 0 ? Math.round((goals / attempts) * 100) : 0;
-            document.getElementById('lv-shooting').textContent =
-                attempts > 0 ? `Shooting ${goals}/${attempts} (${pct}%)` : '';
+        // Timer
+        if (d.timerSeconds !== undefined && d.quarterLength) {
+            const mins = Math.floor(d.timerSeconds / 60);
+            const secs = d.timerSeconds % 60;
+            document.getElementById('lv-timer').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
         }
+
+        // Shooting %
+        let totalGoals = 0, totalMisses = 0;
+        if (d.playerStats) {
+            Object.values(d.playerStats).forEach(s => {
+                totalGoals += s.goal || 0;
+                totalMisses += s.miss || 0;
+            });
+            const attempts = totalGoals + totalMisses;
+            const pct = attempts > 0 ? Math.round((totalGoals / attempts) * 100) : 0;
+            document.getElementById('lv-shooting').textContent =
+                attempts > 0 ? `Shooting ${totalGoals}/${attempts} (${pct}%)` : '';
+        }
+
+        // Possession stats
+        const possEl = document.getElementById('lv-possession');
+        const cpg = d.cpToGoal || 0;
+        const tog = d.toToGoal || 0;
+        possEl.innerHTML = cpg || tog ?
+            `<span>CP→Goal: <span class="poss-val">${cpg}</span></span>
+             <span>TO→Goal: <span class="poss-val">${tog}</span></span>` : '';
 
         // Quarter scores
         if (d.quarterScores) {
@@ -755,29 +807,44 @@
             }).join('');
         }
 
-        // Player stats
+        // Player stats with performance index
         if (d.players && d.playerStats) {
-            const positions = ['GS', 'GA', 'WA', 'C', 'WD', 'GD', 'GK'];
             const statsEl = document.getElementById('lv-stats');
+            const shootPos = ['GS', 'GA'];
+            const defPos = ['GD', 'GK', 'WD'];
 
-            // Build position map from events (last known positions)
+            // Build position map from court data or events
             const playerPos = {};
+            if (d.court) {
+                Object.entries(d.court).forEach(([pos, p]) => { if (p) playerPos[p.id] = pos; });
+            }
             if (d.events) {
-                d.events.forEach(e => {
-                    if (e.playerId !== null && e.position) playerPos[e.playerId] = e.position;
-                });
+                d.events.forEach(e => { if (e.playerId !== null && e.position) playerPos[e.playerId] = e.position; });
+            }
+
+            // Performance index: 0-100 based on position
+            function calcIndex(s, pos) {
+                const positives = (s.goal||0)*5 + (s.intercept||0)*4 + (s.deflection||0)*3 +
+                    (s.rebound||0)*3 + (s.feed||0)*2 + (s.centre_pass||0)*2 + (s.pickup||0)*2;
+                const negatives = (s.turnover||0)*4 + (s.unforced_error||0)*3 + (s.not_received||0)*2 +
+                    (s.footwork||0)*2 + (s.offside||0)*2 + (s.penalty_contact||0)*2 +
+                    (s.penalty_obstruction||0)*2 + (s.miss||0)*1;
+                const raw = positives - negatives;
+                // Normalize: expect ~20 raw for good game, cap at 50
+                return Math.max(0, Math.min(100, Math.round((raw / 40) * 100)));
             }
 
             statsEl.innerHTML = d.players.map(p => {
                 const s = d.playerStats[p.id] || {};
-                const goals = s.goal || 0;
-                const misses = s.miss || 0;
-                const attempts = goals + misses;
-                const pct = attempts > 0 ? Math.round((goals / attempts) * 100) + '%' : '';
+                const goals = s.goal||0, misses = s.miss||0, attempts = goals+misses;
+                const pct = attempts > 0 ? Math.round((goals/attempts)*100)+'%' : '';
                 const pos = playerPos[p.id] || '';
                 const hasStats = Object.keys(s).length > 0;
-
                 if (!hasStats) return '';
+
+                const idx = calcIndex(s, pos);
+                const courtMins = d.courtTime && d.courtTime[p.id] ? Math.round(d.courtTime[p.id]/60) : '';
+                const idxColor = idx >= 70 ? 'var(--success)' : idx >= 40 ? 'var(--accent-light)' : 'var(--danger)';
 
                 let statsHtml = '';
                 if (attempts > 0) {
@@ -785,17 +852,20 @@
                     statsHtml += `<div class="stat-val shooting"><span class="num">${pct}</span><span class="label">Shot%</span></div>`;
                 }
                 if (s.intercept) statsHtml += `<div class="stat-val"><span class="num">${s.intercept}</span><span class="label">Int</span></div>`;
-                if (s.turnover) statsHtml += `<div class="stat-val"><span class="num">${s.turnover}</span><span class="label">TO</span></div>`;
+                if (s.deflection) statsHtml += `<div class="stat-val"><span class="num">${s.deflection}</span><span class="label">Def</span></div>`;
                 if (s.rebound) statsHtml += `<div class="stat-val"><span class="num">${s.rebound}</span><span class="label">Reb</span></div>`;
+                if (s.turnover) statsHtml += `<div class="stat-val"><span class="num" style="color:var(--danger)">${s.turnover}</span><span class="label">TO</span></div>`;
+                if (s.unforced_error) statsHtml += `<div class="stat-val"><span class="num" style="color:var(--danger)">${s.unforced_error}</span><span class="label">UE</span></div>`;
                 if (s.centre_pass) statsHtml += `<div class="stat-val"><span class="num">${s.centre_pass}</span><span class="label">CP</span></div>`;
                 if (s.feed) statsHtml += `<div class="stat-val"><span class="num">${s.feed}</span><span class="label">Feed</span></div>`;
-                if (s.assist) statsHtml += `<div class="stat-val"><span class="num">${s.assist}</span><span class="label">Ast</span></div>`;
-                if (s.deflection) statsHtml += `<div class="stat-val"><span class="num">${s.deflection}</span><span class="label">Def</span></div>`;
+                if (s.not_received) statsHtml += `<div class="stat-val"><span class="num" style="color:var(--danger)">${s.not_received}</span><span class="label">NR</span></div>`;
 
                 return `<div class="stat-card">
                     ${pos ? `<span class="stat-pos">${pos}</span>` : ''}
                     <span class="stat-name">${p.name}</span>
+                    <span class="stat-index" style="color:${idxColor}">${idx}</span>
                     <div class="stat-values">${statsHtml}</div>
+                    ${courtMins ? `<span class="stat-mins">${courtMins}m</span>` : ''}
                 </div>`;
             }).join('');
         }

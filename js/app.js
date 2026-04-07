@@ -47,26 +47,32 @@ const App = {
         matches: 'netballstats_matches'
     },
 
-    // Action definitions: { key, label, icon, cssClass, positions (null=all), level }
+    // Action definitions: { key, label, icon, cssClass, positions (null=all), category }
     ACTIONS_BASIC: [
         { key: 'goal', label: 'Goal', icon: '&#9917;', css: 'action-goal', positions: ['GS', 'GA'] },
         { key: 'miss', label: 'Miss', icon: '&#10060;', css: 'action-miss', positions: ['GS', 'GA'] },
-        { key: 'centre_pass', label: 'Centre Pass', icon: '&#9654;', css: 'action-neutral', positions: null },
+        { key: 'centre_pass', label: 'C.Pass', icon: '&#9654;', css: 'action-neutral', positions: null },
         { key: 'intercept', label: 'Intercept', icon: '&#128170;', css: 'action-positive', positions: null },
         { key: 'turnover', label: 'Turnover', icon: '&#8635;', css: 'action-negative', positions: null },
         { key: 'rebound', label: 'Rebound', icon: '&#8593;', css: 'action-positive', positions: ['GS', 'GA', 'GK', 'GD'] },
     ],
     ACTIONS_DETAILED: [
+        // Shooting
         { key: 'goal', label: 'Goal', icon: '&#9917;', css: 'action-goal', positions: ['GS', 'GA'] },
         { key: 'miss', label: 'Miss', icon: '&#10060;', css: 'action-miss', positions: ['GS', 'GA'] },
+        // Positive
+        { key: 'centre_pass', label: 'C.Pass', icon: '&#9654;', css: 'action-neutral', positions: null },
         { key: 'feed', label: 'Feed', icon: '&#10145;', css: 'action-neutral', positions: null },
-        { key: 'assist', label: 'Assist', icon: '&#127942;', css: 'action-positive', positions: null },
-        { key: 'centre_pass', label: 'Centre Pass', icon: '&#9654;', css: 'action-neutral', positions: null },
         { key: 'intercept', label: 'Intercept', icon: '&#128170;', css: 'action-positive', positions: null },
         { key: 'deflection', label: 'Deflection', icon: '&#128400;', css: 'action-positive', positions: null },
-        { key: 'turnover', label: 'Turnover', icon: '&#8635;', css: 'action-negative', positions: null },
         { key: 'rebound', label: 'Rebound', icon: '&#8593;', css: 'action-positive', positions: ['GS', 'GA', 'GK', 'GD'] },
         { key: 'pickup', label: 'Pickup', icon: '&#9995;', css: 'action-positive', positions: null },
+        // Negative
+        { key: 'turnover', label: 'Turnover', icon: '&#8635;', css: 'action-negative', positions: null },
+        { key: 'unforced_error', label: 'Unforced', icon: '&#10071;', css: 'action-negative', positions: null },
+        { key: 'not_received', label: 'Not Recv', icon: '&#128078;', css: 'action-negative', positions: null },
+        { key: 'footwork', label: 'Footwork', icon: '&#129406;', css: 'action-negative', positions: null },
+        { key: 'offside', label: 'Offside', icon: '&#128679;', css: 'action-negative', positions: null },
         { key: 'penalty_contact', label: 'Contact', icon: '&#9888;', css: 'action-negative', positions: null },
         { key: 'penalty_obstruction', label: 'Obstruct', icon: '&#128683;', css: 'action-negative', positions: null },
     ],
@@ -716,11 +722,15 @@ const App = {
     startTimer() {
         if (this.timerRunning) return;
         this.timerRunning = true;
+        this._timerTicks = 0;
         document.getElementById('match-timer').style.color = '#10B981';
         this.timerInterval = setInterval(() => {
             if (this.timerSeconds > 0) {
                 this.timerSeconds--;
                 this.updateTimerDisplay();
+                // Sync timer to Firebase every 15 seconds
+                this._timerTicks++;
+                if (this._timerTicks % 15 === 0) this.syncLive();
             } else {
                 this.pauseTimer();
                 this.toast('Quarter time!', 'success');
@@ -749,13 +759,11 @@ const App = {
     // ==========================================
     nextQuarter() {
         if (this.match.quarter >= 4) {
-            this.showConfirm('End match and see summary?', confirmed => {
-                if (confirmed) this.endMatch();
-            });
+            this.showQuarterComment(4, () => this.endMatch());
             return;
         }
-        this.showConfirm(`End Q${this.match.quarter} and start Q${this.match.quarter + 1}?`, confirmed => {
-            if (!confirmed) return;
+        const fromQ = this.match.quarter;
+        this.showQuarterComment(fromQ, () => {
             this.pauseTimer();
             this.match.quarter++;
             this.timerSeconds = this.match.quarterLength * 60;
@@ -765,11 +773,32 @@ const App = {
             this.cancelPlayerSelection();
             this.addSystemEvent(`Q${this.match.quarter} started`);
 
-            // Update button text for Q4
             if (this.match.quarter >= 4) {
                 document.getElementById('btn-quarter').textContent = 'Full Time';
             }
         });
+    },
+
+    showQuarterComment(quarter, callback) {
+        const label = quarter >= 4 ? 'Full Time' : `End Q${quarter}`;
+        const dialog = document.getElementById('confirm-dialog');
+        const msg = document.getElementById('confirm-message');
+        msg.innerHTML = `<strong>${label}</strong><br>
+            <textarea id="quarter-comment" placeholder="Optional comment for live feed..."
+            style="width:100%;margin-top:0.5rem;padding:0.5rem;border:1.5px solid var(--border-strong);
+            border-radius:var(--radius-xs);background:var(--bg);color:var(--text);
+            font-family:var(--font);font-size:0.85rem;resize:none;min-height:60px"></textarea>`;
+        dialog.classList.remove('hidden');
+        this._confirmCallback = (confirmed) => {
+            if (!confirmed) return;
+            const comment = document.getElementById('quarter-comment').value.trim();
+            if (comment) {
+                if (!this.match.quarterComments) this.match.quarterComments = {};
+                this.match.quarterComments[quarter] = comment;
+                this.addSystemEvent(`Q${quarter} comment: ${comment}`);
+            }
+            callback();
+        };
     },
 
     abandonMatch() {
@@ -819,6 +848,9 @@ const App = {
             players: this.match.players,
             playerStats: this.match.playerStats,
             courtTime: this.match.courtTime,
+            cpToGoal: this.match.cpToGoal || 0,
+            toToGoal: this.match.toToGoal || 0,
+            quarterComments: this.match.quarterComments || {},
             events: this.match.events,
             trackingLevel: this.match.trackingLevel,
             quarterLength: this.match.quarterLength,
@@ -909,8 +941,8 @@ const App = {
 
     // Action categories
     SHOOTING_ACTIONS: ['goal', 'miss'],
-    POSITIVE_ACTIONS: ['centre_pass', 'intercept', 'rebound', 'feed', 'assist', 'deflection', 'pickup'],
-    NEGATIVE_ACTIONS: ['turnover', 'penalty_contact', 'penalty_obstruction'],
+    POSITIVE_ACTIONS: ['centre_pass', 'feed', 'intercept', 'deflection', 'rebound', 'pickup'],
+    NEGATIVE_ACTIONS: ['turnover', 'unforced_error', 'not_received', 'footwork', 'offside', 'penalty_contact', 'penalty_obstruction'],
 
     renderActionButtons(pos) {
         const actions = this.trackingLevel === 'basic' ? this.ACTIONS_BASIC : this.ACTIONS_DETAILED;
@@ -957,11 +989,23 @@ const App = {
         if (!this.match.playerStats[id]) this.match.playerStats[id] = {};
         this.match.playerStats[id][actionKey] = (this.match.playerStats[id][actionKey] || 0) + 1;
 
-        // Handle goal scoring
+        // Handle goal scoring + possession tracking
         if (actionKey === 'goal') {
             this.match.homeScore++;
             this.match.quarterScores[this.match.quarter - 1].home++;
             this.updateScoreDisplay();
+
+            // Track CP to goal / TO to goal
+            if (!this.match.cpToGoal) this.match.cpToGoal = 0;
+            if (!this.match.toToGoal) this.match.toToGoal = 0;
+            const recentEvents = this.match.events.slice(-10);
+            for (let i = recentEvents.length - 1; i >= 0; i--) {
+                const e = recentEvents[i];
+                if (e.team !== 'home') continue;
+                if (e.action === 'centre_pass') { this.match.cpToGoal++; break; }
+                if (e.action === 'intercept' || e.action === 'turnover' || e.action === 'rebound' || e.action === 'deflection' || e.action === 'pickup') { this.match.toToGoal++; break; }
+                if (e.action === 'opp_goal' || e.action === 'system') break;
+            }
         }
 
         // Create event
@@ -1241,6 +1285,59 @@ const App = {
 
     closeSubs() {
         document.getElementById('match-subs').classList.add('hidden');
+    },
+
+    // ==========================================
+    // POSITION SWAPS (on-court only)
+    // ==========================================
+    _swapSelection: [],
+
+    showSwapPositions() {
+        this.cancelPlayerSelection();
+        this._swapSelection = [];
+        const grid = document.getElementById('swap-players');
+        grid.innerHTML = this.POSITIONS.map(pos => {
+            const p = this.match.court[pos];
+            if (!p) return '';
+            return `<button class="sub-btn" data-pos="${pos}" data-id="${p.id}"
+                onclick="App.selectSwapPlayer('${pos}')">${pos}: ${p.name}</button>`;
+        }).join('');
+        document.getElementById('btn-confirm-swap').disabled = true;
+        document.getElementById('match-swap').classList.remove('hidden');
+    },
+
+    selectSwapPlayer(pos) {
+        const idx = this._swapSelection.indexOf(pos);
+        if (idx >= 0) {
+            this._swapSelection.splice(idx, 1);
+        } else if (this._swapSelection.length < 2) {
+            this._swapSelection.push(pos);
+        }
+        document.querySelectorAll('#swap-players .sub-btn').forEach(btn => {
+            btn.classList.toggle('selected', this._swapSelection.includes(btn.dataset.pos));
+        });
+        document.getElementById('btn-confirm-swap').disabled = this._swapSelection.length !== 2;
+    },
+
+    confirmSwap() {
+        if (this._swapSelection.length !== 2) return;
+        const [posA, posB] = this._swapSelection;
+        const playerA = this.match.court[posA];
+        const playerB = this.match.court[posB];
+
+        // Swap positions
+        this.match.court[posA] = { ...playerB, position: posA };
+        this.match.court[posB] = { ...playerA, position: posB };
+
+        this.addSystemEvent(`Swap: ${playerA.name} to ${posB}, ${playerB.name} to ${posA}`);
+        this.renderCourtPlayers();
+        this.closeSwap();
+        this.toast(`${playerA.name} ↔ ${playerB.name}`, 'success');
+    },
+
+    closeSwap() {
+        document.getElementById('match-swap').classList.add('hidden');
+        this._swapSelection = [];
     },
 
     // ==========================================
