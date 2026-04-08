@@ -1906,7 +1906,8 @@ const App = {
     },
 
     async checkLandingStatus() {
-        if (!this.useFirebase) return;
+        if (!this.useFirebase || !DB) return;
+        // Statistician status
         const lock = await DB.getStatistician();
         const el = document.getElementById('landing-status');
         if (lock && lock.active && lock.name) {
@@ -1917,6 +1918,37 @@ const App = {
         } else {
             el.innerHTML = '';
         }
+
+        // Season overview stats
+        this.updateLandingStats();
+    },
+
+    updateLandingStats() {
+        const statsEl = document.getElementById('lp-season-stats');
+        if (!statsEl || !this.matches.length) return;
+
+        const wins = this.matches.filter(m => m.homeScore > m.awayScore).length;
+        const losses = this.matches.length - wins;
+        let goalsFor = 0, goalsAgainst = 0, totalGoals = 0, totalMisses = 0;
+        this.matches.forEach(m => {
+            goalsFor += m.homeScore || 0;
+            goalsAgainst += m.awayScore || 0;
+            if (m.playerStats) {
+                Object.values(m.playerStats).forEach(s => {
+                    totalGoals += s.goal || 0;
+                    totalMisses += s.miss || 0;
+                });
+            }
+        });
+        const pct = (totalGoals + totalMisses) > 0 ? Math.round((totalGoals / (totalGoals + totalMisses)) * 100) : 0;
+        const diff = goalsFor - goalsAgainst;
+
+        statsEl.innerHTML = `
+            <div class="lp-stat"><p class="lp-stat-label">Record</p><p class="lp-stat-val">${wins}W ${losses}L</p></div>
+            <div class="lp-stat"><p class="lp-stat-label">Shooting</p><p class="lp-stat-val">${pct ? pct + '%' : '-'}</p></div>
+            <div class="lp-stat"><p class="lp-stat-label">Goals For</p><p class="lp-stat-val">${goalsFor || '-'}</p></div>
+            <div class="lp-stat"><p class="lp-stat-label">Diff</p><p class="lp-stat-val ${diff > 0 ? 'accent' : ''}">${diff > 0 ? '+' : ''}${diff || '-'}</p></div>
+        `;
     },
 };
 
