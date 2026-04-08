@@ -295,17 +295,16 @@
         </div>
 
         <div class="form-section">
-            <h3>Your Squad</h3>
-            <select id="setup-saved-team" style="display:none"></select>
-            <div class="form-group">
-                <label>Team Name</label>
-                <input type="text" id="setup-team-name" class="input-large" placeholder="Your team name">
+            <h3>Today's Squad</h3>
+            <p class="hint" style="margin-bottom:0.5rem">Tap to select players for this match</p>
+            <div id="squad-picker" class="squad-picker"></div>
+            <div class="squad-add-row" style="margin-top:0.5rem">
+                <input type="text" id="new-player-name" class="input-large" placeholder="New player name" style="flex:1">
+                <button class="btn btn-small btn-primary" onclick="App.addNewSquadPlayer()">Add</button>
             </div>
-            <div class="form-group">
-                <label>Players</label>
-                <div id="setup-team-players" class="player-list-edit"></div>
-                <button class="btn btn-small btn-outline" style="margin-top:0.5rem" onclick="App.addPlayerRow('setup-team-players')">+ Add Player</button>
-            </div>
+            <input type="hidden" id="setup-team-name">
+            <input type="hidden" id="setup-saved-team">
+            <div id="setup-team-players" style="display:none"></div>
         </div>
 
         <div class="form-section">

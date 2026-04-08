@@ -45,7 +45,25 @@ function createClubDB(clubId) {
     return {
         clubId,
 
-        // Teams (squads)
+        // Squad roster (persistent player list with stable IDs)
+        async saveSquad(players) {
+            await setDoc(doc(db, prefix + '/config', 'squad'), { players, updatedAt: Date.now() });
+        },
+        async getSquad() {
+            const snap = await getDoc(doc(db, prefix + '/config', 'squad'));
+            return snap.exists() ? snap.data().players || [] : [];
+        },
+
+        // Last lineup (which players were selected + positions)
+        async saveLastLineup(lineup) {
+            await setDoc(doc(db, prefix + '/config', 'lastLineup'), { lineup, updatedAt: Date.now() });
+        },
+        async getLastLineup() {
+            const snap = await getDoc(doc(db, prefix + '/config', 'lastLineup'));
+            return snap.exists() ? snap.data().lineup || null : null;
+        },
+
+        // Legacy teams (keep for backward compat)
         async saveTeam(team) {
             const id = team.name.toLowerCase().replace(/\s+/g, '-');
             await setDoc(doc(db, prefix + '/teams', id), team);

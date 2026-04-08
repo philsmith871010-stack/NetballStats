@@ -28,6 +28,10 @@ const App = {
     matches: [],
     trackingLevel: 'basic',
 
+    // Squad roster (persistent across matches)
+    squad: [], // [{ id: 'p_xxx', name: 'Amber', number: '1' }, ...]
+    lastLineup: null, // { playerIds: [...], positions: { GS: 'p_xxx', ... } }
+
     // Current match setup state
     setupPlayers: [],
     setupTeamName: '',
@@ -174,6 +178,74 @@ const App = {
 
     seedSampleDataIfEmpty() {
         // Disabled — no sample data, all real matches only
+    },
+
+    // ==========================================
+    // SQUAD ROSTER
+    // ==========================================
+    generatePlayerId() {
+        return 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    },
+
+    async loadSquad() {
+        if (this.useFirebase && DB) {
+            try {
+                this.squad = await DB.getSquad();
+                if (this.squad.length) {
+                    // Save locally as backup
+                    localStorage.setItem(this.getStorageKey('squad'), JSON.stringify(this.squad));
+                }
+                this.lastLineup = await DB.getLastLineup();
+                return;
+            } catch (e) { console.error('Failed to load squad from Firebase:', e); }
+        }
+        // Fallback to localStorage
+        try {
+            const json = localStorage.getItem(this.getStorageKey('squad'));
+            if (json) this.squad = JSON.parse(json);
+        } catch (e) {}
+    },
+
+    async saveSquad() {
+        localStorage.setItem(this.getStorageKey('squad'), JSON.stringify(this.squad));
+        if (this.useFirebase && DB) {
+            DB.saveSquad(this.squad).catch(e => console.error('Failed to save squad:', e));
+        }
+    },
+
+    async saveLastLineup(lineup) {
+        this.lastLineup = lineup;
+        if (this.useFirebase && DB) {
+            DB.saveLastLineup(lineup).catch(e => console.error('Failed to save lineup:', e));
+        }
+    },
+
+    addPlayerToSquad(name, number) {
+        if (!name.trim()) return null;
+        const player = { id: this.generatePlayerId(), name: name.trim(), number: (number || '').trim() };
+        this.squad.push(player);
+        this.saveSquad();
+        return player;
+    },
+
+    removePlayerFromSquad(playerId) {
+        this.squad = this.squad.filter(p => p.id !== playerId);
+        this.saveSquad();
+    },
+
+    // Migrate old-format players (index-based) to ID-based
+    migrateOldPlayers() {
+        if (this.teams.length > 0 && this.squad.length === 0) {
+            const oldTeam = this.teams[0];
+            if (oldTeam && oldTeam.players) {
+                this.squad = oldTeam.players.map((p, i) => ({
+                    id: 'p_legacy_' + i,
+                    name: p.name,
+                    number: p.number || ''
+                }));
+                this.saveSquad();
+            }
+        }
     },
 
     createSampleMatches() {
@@ -353,20 +425,9 @@ const App = {
                 this.renderSavedTeams();
                 break;
             case 'view-setup-team':
-                // Always auto-load the club's squad
-                if (this.teams.length > 0) {
-                    const squad = this.teams[0];
-                    document.getElementById('setup-team-name').value = squad.name || (this.clubInfo ? this.clubInfo.name : '');
-                    const container = document.getElementById('setup-team-players');
-                    container.innerHTML = '';
-                    squad.players.forEach(p => this.appendPlayerRow(container, p.name, p.number));
-                    // Add a few empty rows for new players
-                    for (let i = 0; i < 3; i++) this.appendPlayerRow(container, '', '');
-                } else {
-                    // No squad yet — use club name and empty rows
-                    document.getElementById('setup-team-name').value = this.clubInfo ? this.clubInfo.name : '';
-                    this.populatePlayerRows('setup-team-players', 12);
-                }
+                document.getElementById('setup-team-name').value =
+                    this.clubInfo ? this.clubInfo.name : '';
+                this.renderSquadPicker();
                 break;
             case 'view-history':
                 this.renderHistory();
@@ -536,28 +597,79 @@ const App = {
         }
     },
 
-    proceedToLineup() {
-        const teamName = document.getElementById('setup-team-name').value.trim();
-        const opposition = document.getElementById('setup-opposition').value.trim();
-        const players = this.getPlayersFromContainer('setup-team-players');
+    // ==========================================
+    // SQUAD PICKER (match setup)
+    // ==========================================
+    _selectedSquadIds: new Set(),
 
-        if (!teamName) { this.toast('Enter your team name', 'error'); return; }
-        if (!opposition) { this.toast('Enter opposition name', 'error'); return; }
-        if (players.length < 7) { this.toast('Need at least 7 players', 'error'); return; }
-
-        // Save squad for next time (auto-persist any edits)
-        const squad = { name: teamName, players };
-        const existingIdx = this.teams.findIndex(t => t.name.toLowerCase() === teamName.toLowerCase());
-        if (existingIdx >= 0) {
-            this.teams[existingIdx] = squad;
-        } else {
-            this.teams.unshift(squad);
+    renderSquadPicker() {
+        const container = document.getElementById('squad-picker');
+        // Pre-select: use last lineup if available, otherwise select all
+        if (!this._selectedSquadIds.size) {
+            if (this.lastLineup && this.lastLineup.playerIds) {
+                this._selectedSquadIds = new Set(this.lastLineup.playerIds);
+            } else {
+                this._selectedSquadIds = new Set(this.squad.map(p => p.id));
+            }
         }
-        this.saveTeams();
 
-        // Store setup data for match creation
+        container.innerHTML = this.squad.map(p => {
+            const sel = this._selectedSquadIds.has(p.id);
+            return `<div class="squad-player ${sel ? 'selected' : ''}" onclick="App.toggleSquadPlayer('${p.id}')">
+                <div class="sp-check">${sel ? '✓' : ''}</div>
+                <span class="sp-name">${p.name}</span>
+                ${p.number ? `<span class="sp-number">#${p.number}</span>` : ''}
+                <span class="sp-remove material-symbols-outlined" onclick="event.stopPropagation();App.removeSquadPlayer('${p.id}')">close</span>
+            </div>`;
+        }).join('');
+
+        if (!this.squad.length) {
+            container.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:1rem">No players yet — add your squad below</p>';
+        }
+    },
+
+    toggleSquadPlayer(playerId) {
+        if (this._selectedSquadIds.has(playerId)) {
+            this._selectedSquadIds.delete(playerId);
+        } else {
+            this._selectedSquadIds.add(playerId);
+        }
+        this.renderSquadPicker();
+    },
+
+    addNewSquadPlayer() {
+        const input = document.getElementById('new-player-name');
+        const name = input.value.trim();
+        if (!name) return;
+        this.addPlayerToSquad(name, '');
+        input.value = '';
+        this._selectedSquadIds.add(this.squad[this.squad.length - 1].id);
+        this.renderSquadPicker();
+    },
+
+    removeSquadPlayer(playerId) {
+        this.showConfirm('Remove this player from the squad?', confirmed => {
+            if (!confirmed) return;
+            this.removePlayerFromSquad(playerId);
+            this._selectedSquadIds.delete(playerId);
+            this.renderSquadPicker();
+        });
+    },
+
+    proceedToLineup() {
+        const teamName = this.clubInfo ? this.clubInfo.name : 'Team';
+        const opposition = document.getElementById('setup-opposition').value.trim();
+        const selectedPlayers = this.squad.filter(p => this._selectedSquadIds.has(p.id));
+
+        if (!opposition) { this.toast('Enter opposition name', 'error'); return; }
+        if (selectedPlayers.length < 7) { this.toast(`Select at least 7 players (${selectedPlayers.length} selected)`, 'error'); return; }
+
+        // Save lineup for next time
+        this.saveLastLineup({ playerIds: [...this._selectedSquadIds] });
+
+        // Store setup data — use persistent player IDs
         this.setupTeamName = teamName;
-        this.setupPlayers = players.map((p, i) => ({ ...p, id: i }));
+        this.setupPlayers = selectedPlayers.map(p => ({ ...p }));
         this.setupOpposition = opposition;
         this.setupDate = document.getElementById('setup-date').value;
         this.setupVenue = document.getElementById('setup-venue').value.trim();
@@ -1822,6 +1934,8 @@ const App = {
 
             // Load data for this club
             await this.loadData();
+            await this.loadSquad();
+            this.migrateOldPlayers();
             this.seedSampleDataIfEmpty();
             this.checkLandingStatus();
 
