@@ -266,7 +266,6 @@ const App = {
                 <div class="rp-avatar">${initials}</div>
                 <div class="rp-info">
                     <div class="rp-name">${p.name}</div>
-                    <div class="rp-id">${p.id}</div>
                 </div>
                 ${p.number ? `<span class="rp-number">#${p.number}</span>` : ''}
                 <span class="rp-remove material-symbols-outlined" onclick="App.removeRosterPlayer('${p.id}')">delete</span>
