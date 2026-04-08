@@ -208,7 +208,7 @@
             <span class="material-symbols-outlined" style="font-size:1.3rem">history</span> Match History
         </button>
         <button class="btn btn-secondary btn-large" onclick="App.showView('view-manage-teams')">
-            <span class="material-symbols-outlined" style="font-size:1.3rem">groups</span> Manage Teams
+            <span class="material-symbols-outlined" style="font-size:1.3rem">groups</span> Edit Squad
         </button>
     </div>
     <div style="padding:0 1.25rem">
@@ -295,13 +295,8 @@
         </div>
 
         <div class="form-section">
-            <h3>Your Team</h3>
-            <div class="form-group">
-                <label>Load Saved Team</label>
-                <select id="setup-saved-team" class="input-large" onchange="App.loadSavedTeam()">
-                    <option value="">-- Or enter manually below --</option>
-                </select>
-            </div>
+            <h3>Your Squad</h3>
+            <select id="setup-saved-team" style="display:none"></select>
             <div class="form-group">
                 <label>Team Name</label>
                 <input type="text" id="setup-team-name" class="input-large" placeholder="Your team name">

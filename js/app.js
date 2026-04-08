@@ -353,19 +353,19 @@ const App = {
                 this.renderSavedTeams();
                 break;
             case 'view-setup-team':
-                this.populateSavedTeamDropdown();
-                if (!document.getElementById('setup-team-players').children.length) {
-                    this.populatePlayerRows('setup-team-players', 10);
-                }
-                // Auto-load first saved team and set default opposition for quick testing
-                if (this.teams.length > 0 && !document.getElementById('setup-team-name').value) {
-                    document.getElementById('setup-saved-team').value = '0';
-                    this.loadSavedTeam();
-                    // Set opposition to second team if available, otherwise a default
-                    if (!document.getElementById('setup-opposition').value) {
-                        document.getElementById('setup-opposition').value =
-                            this.teams.length > 1 ? this.teams[1].name : 'Vipers';
-                    }
+                // Always auto-load the club's squad
+                if (this.teams.length > 0) {
+                    const squad = this.teams[0];
+                    document.getElementById('setup-team-name').value = squad.name || (this.clubInfo ? this.clubInfo.name : '');
+                    const container = document.getElementById('setup-team-players');
+                    container.innerHTML = '';
+                    squad.players.forEach(p => this.appendPlayerRow(container, p.name, p.number));
+                    // Add a few empty rows for new players
+                    for (let i = 0; i < 3; i++) this.appendPlayerRow(container, '', '');
+                } else {
+                    // No squad yet — use club name and empty rows
+                    document.getElementById('setup-team-name').value = this.clubInfo ? this.clubInfo.name : '';
+                    this.populatePlayerRows('setup-team-players', 12);
                 }
                 break;
             case 'view-history':
@@ -544,6 +544,16 @@ const App = {
         if (!teamName) { this.toast('Enter your team name', 'error'); return; }
         if (!opposition) { this.toast('Enter opposition name', 'error'); return; }
         if (players.length < 7) { this.toast('Need at least 7 players', 'error'); return; }
+
+        // Save squad for next time (auto-persist any edits)
+        const squad = { name: teamName, players };
+        const existingIdx = this.teams.findIndex(t => t.name.toLowerCase() === teamName.toLowerCase());
+        if (existingIdx >= 0) {
+            this.teams[existingIdx] = squad;
+        } else {
+            this.teams.unshift(squad);
+        }
+        this.saveTeams();
 
         // Store setup data for match creation
         this.setupTeamName = teamName;
