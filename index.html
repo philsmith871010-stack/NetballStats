@@ -128,17 +128,26 @@
             </a>
 
             <!-- Match History -->
-            <a href="live.html" class="lp-card lp-card-wide lp-card-history">
-                <div class="lp-card-main">
-                    <span class="material-symbols-outlined lp-card-icon">history</span>
-                    <h3 class="lp-card-title">MATCH HISTORY</h3>
-                    <p class="lp-card-desc">Play-by-play, stats & results</p>
-                </div>
+            <a href="live.html" class="lp-card lp-card-tall">
+                <span class="material-symbols-outlined lp-card-icon">history</span>
+                <h3 class="lp-card-title">MATCH HISTORY</h3>
+                <p class="lp-card-desc">Past results & stats</p>
                 <div class="lp-card-footer">
-                    <span class="lp-card-hint">View all matches</span>
+                    <span class="lp-card-hint">View matches</span>
                     <span class="material-symbols-outlined lp-arrow">arrow_forward</span>
                 </div>
             </a>
+
+            <!-- Squad Roster -->
+            <div class="lp-card lp-card-tall" onclick="App.enterRecorder('squad')">
+                <span class="material-symbols-outlined lp-card-icon">groups</span>
+                <h3 class="lp-card-title">SQUAD</h3>
+                <p class="lp-card-desc">Manage your roster</p>
+                <div class="lp-card-footer">
+                    <span class="lp-card-hint" id="lp-squad-count"></span>
+                    <span class="material-symbols-outlined lp-arrow">arrow_forward</span>
+                </div>
+            </div>
         </section>
 
         <!-- Bottom Nav -->
@@ -187,7 +196,7 @@
         </div>
         <div id="gate-mine" style="display:none">
             <p style="text-align:center;margin-bottom:1rem">You're the active statistician</p>
-            <button class="btn btn-primary btn-large" onclick="App.showView('view-home')">Continue Recording</button>
+            <button class="btn btn-primary btn-large" onclick="App.showView(App._recorderTarget === 'squad' ? 'view-squad' : 'view-home'); App._recorderTarget = null;">Continue</button>
             <button class="btn btn-outline btn-large" style="margin-top:0.5rem" onclick="App.releaseStatistician()">Release Control</button>
         </div>
     </div>
@@ -291,11 +300,13 @@
 
         <div class="form-section">
             <h3>Today's Squad</h3>
-            <p class="hint" style="margin-bottom:0.5rem">Tap to select players for this match</p>
+            <p class="hint" style="margin-bottom:0.5rem">Tap ✕ to remove. Add from roster below.</p>
             <div id="squad-picker" class="squad-picker"></div>
             <div class="squad-add-row" style="margin-top:0.5rem">
-                <input type="text" id="new-player-name" class="input-large" placeholder="New player name" style="flex:1">
-                <button class="btn btn-small btn-primary" onclick="App.addNewSquadPlayer()">Add</button>
+                <select id="squad-add-dropdown" class="input-large" style="flex:1">
+                    <option value="">+ Add player from roster...</option>
+                </select>
+                <button class="btn btn-small btn-primary" onclick="App.addFromRosterDropdown()">Add</button>
             </div>
             <input type="hidden" id="setup-team-name">
             <input type="hidden" id="setup-saved-team">

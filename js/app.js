@@ -654,6 +654,7 @@ const App = {
 
     renderSquadPicker() {
         const container = document.getElementById('squad-picker');
+
         // Pre-select: use last lineup if available, otherwise select all
         if (!this._selectedSquadIds.size) {
             if (this.lastLineup && this.lastLineup.playerIds) {
@@ -663,47 +664,50 @@ const App = {
             }
         }
 
-        container.innerHTML = this.squad.map(p => {
-            const sel = this._selectedSquadIds.has(p.id);
-            return `<div class="squad-player ${sel ? 'selected' : ''}" onclick="App.toggleSquadPlayer('${p.id}')">
-                <div class="sp-check">${sel ? '✓' : ''}</div>
-                <span class="sp-name">${p.name}</span>
-                ${p.number ? `<span class="sp-number">#${p.number}</span>` : ''}
-                <span class="sp-remove material-symbols-outlined" onclick="event.stopPropagation();App.removeSquadPlayer('${p.id}')">close</span>
-            </div>`;
-        }).join('');
+        // Show only selected players
+        const selected = this.squad.filter(p => this._selectedSquadIds.has(p.id));
 
-        if (!this.squad.length) {
-            container.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:1rem">No players yet — add your squad below</p>';
-        }
-    },
-
-    toggleSquadPlayer(playerId) {
-        if (this._selectedSquadIds.has(playerId)) {
-            this._selectedSquadIds.delete(playerId);
+        if (selected.length) {
+            container.innerHTML = selected.map(p =>
+                `<div class="squad-player selected">
+                    <span class="sp-name">${p.name}</span>
+                    ${p.number ? `<span class="sp-number">#${p.number}</span>` : ''}
+                    <span class="sp-remove material-symbols-outlined" onclick="App.deselectSquadPlayer('${p.id}')">close</span>
+                </div>`
+            ).join('');
         } else {
-            this._selectedSquadIds.add(playerId);
+            container.innerHTML = '<p style="color:var(--text-dim);text-align:center;padding:1rem">No players selected — add from roster below</p>';
         }
-        this.renderSquadPicker();
+
+        // Update the dropdown with unselected players
+        this.updateRosterDropdown();
     },
 
-    addNewSquadPlayer() {
-        const input = document.getElementById('new-player-name');
-        const name = input.value.trim();
-        if (!name) return;
-        this.addPlayerToSquad(name, '');
-        input.value = '';
-        this._selectedSquadIds.add(this.squad[this.squad.length - 1].id);
-        this.renderSquadPicker();
-    },
+    updateRosterDropdown() {
+        const dropdown = document.getElementById('squad-add-dropdown');
+        const available = this.squad.filter(p => !this._selectedSquadIds.has(p.id));
 
-    removeSquadPlayer(playerId) {
-        this.showConfirm('Remove this player from the squad?', confirmed => {
-            if (!confirmed) return;
-            this.removePlayerFromSquad(playerId);
-            this._selectedSquadIds.delete(playerId);
-            this.renderSquadPicker();
+        dropdown.innerHTML = '<option value="">+ Add player from roster...</option>';
+        available.forEach(p => {
+            dropdown.innerHTML += `<option value="${p.id}">${p.name}${p.number ? ' #' + p.number : ''}</option>`;
         });
+
+        // Hide dropdown if everyone is already selected
+        dropdown.closest('.squad-add-row').style.display = available.length ? 'flex' : 'none';
+    },
+
+    addFromRosterDropdown() {
+        const dropdown = document.getElementById('squad-add-dropdown');
+        const playerId = dropdown.value;
+        if (!playerId) return;
+        this._selectedSquadIds.add(playerId);
+        dropdown.value = '';
+        this.renderSquadPicker();
+    },
+
+    deselectSquadPlayer(playerId) {
+        this._selectedSquadIds.delete(playerId);
+        this.renderSquadPicker();
     },
 
     proceedToLineup() {
@@ -2022,7 +2026,10 @@ const App = {
         }
     },
 
-    async enterRecorder() {
+    _recorderTarget: null,
+
+    async enterRecorder(target) {
+        this._recorderTarget = target || null;
         if (!this.useFirebase) {
             this.showView('view-home');
             return;
@@ -2118,7 +2125,9 @@ const App = {
         }
         document.getElementById('stat-name-badge').textContent = name;
         this.startInactivityTracking();
-        this.showView('view-home');
+        const targetView = this._recorderTarget === 'squad' ? 'view-squad' : 'view-home';
+        this._recorderTarget = null;
+        this.showView(targetView);
         this.toast(`Recording as ${name}`, 'success');
     },
 
@@ -2151,6 +2160,10 @@ const App = {
     },
 
     updateLandingStats() {
+        // Squad count on landing page
+        const sqCountEl = document.getElementById('lp-squad-count');
+        if (sqCountEl) sqCountEl.textContent = this.squad.length ? `${this.squad.length} players` : '';
+
         const statsEl = document.getElementById('lp-season-stats');
         if (!statsEl || !this.matches.length) return;
 
