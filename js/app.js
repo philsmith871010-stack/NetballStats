@@ -43,9 +43,9 @@ const App = {
     // ---- Constants ----
     POSITIONS: ['GS', 'GA', 'WA', 'C', 'WD', 'GD', 'GK'],
     SHOOTING_POSITIONS: ['GS', 'GA'],
-    STORAGE_KEYS: {
-        teams: 'netballstats_teams',
-        matches: 'netballstats_matches'
+    getStorageKey(type) {
+        const prefix = this.clubId ? `ns_${this.clubId}` : 'netballstats';
+        return `${prefix}_${type}`;
     },
 
     // Action definitions: { key, label, icon, cssClass, positions (null=all), category }
@@ -163,9 +163,9 @@ const App = {
             }
         }
         try {
-            const teamsJson = localStorage.getItem(this.STORAGE_KEYS.teams);
+            const teamsJson = localStorage.getItem(this.getStorageKey('teams'));
             if (teamsJson) this.teams = JSON.parse(teamsJson);
-            const matchesJson = localStorage.getItem(this.STORAGE_KEYS.matches);
+            const matchesJson = localStorage.getItem(this.getStorageKey('matches'));
             if (matchesJson) this.matches = JSON.parse(matchesJson);
         } catch (e) {
             console.error('Failed to load data:', e);
@@ -173,16 +173,19 @@ const App = {
     },
 
     seedSampleDataIfEmpty() {
+        // Only seed sample data for hatfield-u13
+        if (this.clubId && this.clubId !== 'hatfield-u13') return;
+
         if (this.teams.length === 0) {
             this.teams = JSON.parse(JSON.stringify(this.SAMPLE_TEAMS));
             this.saveTeams();
         }
-        // Seed sample matches if we have fewer than 8 (the full sample set)
-        const seeded = localStorage.getItem('netballstats_seeded_v2');
+        const seedKey = `netballstats_seeded_${this.clubId || 'default'}_v3`;
+        const seeded = localStorage.getItem(seedKey);
         if (!seeded || this.matches.length < 8) {
             this.matches = this.createSampleMatches();
             this.saveMatches();
-            localStorage.setItem('netballstats_seeded_v2', 'true');
+            localStorage.setItem(seedKey, 'true');
         }
     },
 
@@ -330,14 +333,14 @@ const App = {
     },
 
     saveTeams() {
-        localStorage.setItem(this.STORAGE_KEYS.teams, JSON.stringify(this.teams));
+        localStorage.setItem(this.getStorageKey('teams'), JSON.stringify(this.teams));
         if (this.useFirebase) {
             this.teams.forEach(t => DB.saveTeam(t).catch(e => console.error('Firebase save team error:', e)));
         }
     },
 
     saveMatches() {
-        localStorage.setItem(this.STORAGE_KEYS.matches, JSON.stringify(this.matches));
+        localStorage.setItem(this.getStorageKey('matches'), JSON.stringify(this.matches));
         if (this.useFirebase) {
             this.matches.forEach(m => DB.saveMatch(m).catch(e => console.error('Firebase save match error:', e)));
         }
@@ -1103,16 +1106,16 @@ const App = {
             timerRunning: this.timerRunning,
             trackingLevel: this.trackingLevel,
         };
-        localStorage.setItem('netballstats_live_match', JSON.stringify(state));
+        localStorage.setItem(this.getStorageKey('live_match'), JSON.stringify(state));
     },
 
     clearMatchState() {
-        localStorage.removeItem('netballstats_live_match');
+        localStorage.removeItem(this.getStorageKey('live_match'));
     },
 
     restoreMatchState() {
         try {
-            const json = localStorage.getItem('netballstats_live_match');
+            const json = localStorage.getItem(this.getStorageKey('live_match'));
             if (!json) return false;
             const state = JSON.parse(json);
             if (!state.match || !state.match.id) return false;
