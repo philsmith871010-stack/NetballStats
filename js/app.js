@@ -248,6 +248,58 @@ const App = {
         }
     },
 
+    // ==========================================
+    // SQUAD ROSTER PAGE
+    // ==========================================
+    renderSquadRoster() {
+        const container = document.getElementById('squad-roster-list');
+        document.getElementById('squad-count').textContent = `${this.squad.length} players`;
+
+        if (!this.squad.length) {
+            container.innerHTML = '<p class="empty-state">No players in squad yet</p>';
+            return;
+        }
+
+        container.innerHTML = this.squad.map(p => {
+            const initials = p.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+            return `<div class="roster-player">
+                <div class="rp-avatar">${initials}</div>
+                <div class="rp-info">
+                    <div class="rp-name">${p.name}</div>
+                    <div class="rp-id">${p.id}</div>
+                </div>
+                ${p.number ? `<span class="rp-number">#${p.number}</span>` : ''}
+                <span class="rp-remove material-symbols-outlined" onclick="App.removeRosterPlayer('${p.id}')">delete</span>
+            </div>`;
+        }).join('');
+    },
+
+    addRosterPlayer() {
+        const nameInput = document.getElementById('roster-new-name');
+        const numInput = document.getElementById('roster-new-number');
+        const name = nameInput.value.trim();
+        const number = numInput.value.trim();
+        if (!name) { this.toast('Enter a name', 'error'); return; }
+
+        this.addPlayerToSquad(name, number);
+        nameInput.value = '';
+        numInput.value = '';
+        nameInput.focus();
+        this.renderSquadRoster();
+        this.toast(`${name} added to squad`, 'success');
+    },
+
+    removeRosterPlayer(playerId) {
+        const player = this.squad.find(p => p.id === playerId);
+        if (!player) return;
+        this.showConfirm(`Remove ${player.name} from squad?`, confirmed => {
+            if (!confirmed) return;
+            this.removePlayerFromSquad(playerId);
+            this.renderSquadRoster();
+            this.toast(`${player.name} removed`, 'success');
+        });
+    },
+
     createSampleMatches() {
         const team = this.SAMPLE_TEAMS[0];
         const players = team.players.map((p, i) => ({ ...p, id: i }));
@@ -420,9 +472,8 @@ const App = {
 
     onViewEnter(viewId) {
         switch (viewId) {
-            case 'view-manage-teams':
-                this.populatePlayerRows('manage-team-players', 10);
-                this.renderSavedTeams();
+            case 'view-squad':
+                this.renderSquadRoster();
                 break;
             case 'view-setup-team':
                 document.getElementById('setup-team-name').value =

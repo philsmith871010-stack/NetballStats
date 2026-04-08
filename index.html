@@ -207,6 +207,9 @@
         <button class="btn btn-secondary btn-large" onclick="App.showView('view-history')">
             <span class="material-symbols-outlined" style="font-size:1.3rem">history</span> Match History
         </button>
+        <button class="btn btn-secondary btn-large" onclick="App.showView('view-squad')">
+            <span class="material-symbols-outlined" style="font-size:1.3rem">groups</span> Squad Roster
+        </button>
     </div>
     <div style="padding:0 1.25rem">
         <button class="btn btn-outline btn-large" onclick="App.releaseStatistician()">
@@ -215,36 +218,31 @@
     </div>
 </div>
 
-<!-- ======== MANAGE TEAMS ======== -->
-<div id="view-manage-teams" class="view">
+<!-- ======== SQUAD ROSTER ======== -->
+<div id="view-squad" class="view">
     <div class="view-header">
         <button class="btn-back" onclick="App.showView('view-home')">&larr;</button>
-        <h2>Manage Teams</h2>
+        <h2>Squad Roster</h2>
+        <span id="squad-count" class="stat-badge"></span>
     </div>
     <div class="view-body padded">
-        <div class="form-section">
-            <h3>Create / Edit Team</h3>
-            <div class="form-group">
-                <label>Team Name</label>
-                <input type="text" id="manage-team-name" class="input-large" placeholder="e.g. Thunder">
-            </div>
-            <div class="form-group">
-                <label>Players</label>
-                <div id="manage-team-players" class="player-list-edit"></div>
-                <button class="btn btn-small btn-outline" style="margin-top:0.5rem" onclick="App.addPlayerRow('manage-team-players')">+ Add Player</button>
-            </div>
-            <div class="form-actions">
-                <button class="btn btn-primary btn-large" onclick="App.saveTeam()">Save Team</button>
-            </div>
-        </div>
-        <hr>
-        <div class="form-section">
-            <h3>Saved Teams</h3>
-            <div id="saved-teams-list" class="saved-teams">
-                <p class="empty-state">No saved teams yet</p>
+        <div id="squad-roster-list" class="squad-roster-list"></div>
+        <div class="squad-add-section">
+            <h3 style="font-family:'Space Grotesk',sans-serif;font-size:0.65rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--text-dim);margin-bottom:0.5rem">Add Player</h3>
+            <div class="squad-add-row">
+                <input type="text" id="roster-new-name" class="input-large" placeholder="Player name" style="flex:1">
+                <input type="text" id="roster-new-number" class="input-large" placeholder="#" style="width:50px;text-align:center">
+                <button class="btn btn-primary" onclick="App.addRosterPlayer()">Add</button>
             </div>
         </div>
     </div>
+</div>
+
+<!-- ======== OLD MANAGE TEAMS (hidden, kept for compat) ======== -->
+<div id="view-manage-teams" class="view" style="display:none">
+    <div id="manage-team-players"></div>
+    <div id="saved-teams-list"></div>
+    <input type="hidden" id="manage-team-name">
 </div>
 
 <!-- ======== MATCH SETUP ======== -->
