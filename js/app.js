@@ -1860,16 +1860,26 @@ const App = {
             if (myName && lock.name === myName) {
                 // I'm the current statistician
                 this.statisticianName = myName;
+                this.startInactivityTracking();
                 document.getElementById('gate-available').style.display = 'none';
                 document.getElementById('gate-locked').style.display = 'none';
                 document.getElementById('gate-mine').style.display = '';
             } else {
-                // Someone else is recording
-                document.getElementById('gate-available').style.display = 'none';
-                document.getElementById('gate-locked').style.display = '';
-                document.getElementById('gate-mine').style.display = 'none';
-                document.getElementById('gate-locked-msg').textContent =
-                    `${lock.name} is currently recording stats`;
+                // Someone else is recording — check if stale (>5 min)
+                const elapsed = Date.now() - (lock.claimedAt || 0);
+                if (elapsed > this.INACTIVITY_TIMEOUT) {
+                    // Stale lock — allow takeover
+                    document.getElementById('gate-available').style.display = '';
+                    document.getElementById('gate-locked').style.display = 'none';
+                    document.getElementById('gate-mine').style.display = 'none';
+                    if (myName) document.getElementById('stat-name').value = myName;
+                } else {
+                    document.getElementById('gate-available').style.display = 'none';
+                    document.getElementById('gate-locked').style.display = '';
+                    document.getElementById('gate-mine').style.display = 'none';
+                    document.getElementById('gate-locked-msg').textContent =
+                        `${lock.name} is currently recording stats`;
+                }
             }
         } else {
             // Available
@@ -1879,6 +1889,47 @@ const App = {
             if (myName) document.getElementById('stat-name').value = myName;
         }
         this.showView('view-gate');
+    },
+
+    _inactivityTimer: null,
+    INACTIVITY_TIMEOUT: 5 * 60 * 1000, // 5 minutes
+
+    _heartbeatTimer: null,
+
+    resetInactivityTimer() {
+        if (this._inactivityTimer) clearTimeout(this._inactivityTimer);
+        if (!this.statisticianName) return;
+        this._inactivityTimer = setTimeout(() => {
+            this.toast('Released — 5 min inactive', 'error');
+            this.releaseStatistician();
+        }, this.INACTIVITY_TIMEOUT);
+    },
+
+    startInactivityTracking() {
+        const events = ['touchstart', 'click', 'keydown'];
+        events.forEach(e => {
+            document.addEventListener(e, () => this.resetInactivityTimer(), { passive: true });
+        });
+        this.resetInactivityTimer();
+
+        // Heartbeat: refresh claimedAt every 60s so others know we're active
+        if (this._heartbeatTimer) clearInterval(this._heartbeatTimer);
+        this._heartbeatTimer = setInterval(() => {
+            if (this.statisticianName && this.useFirebase && DB) {
+                DB.claimStatistician(this.statisticianName).catch(console.error);
+            }
+        }, 60000);
+    },
+
+    stopInactivityTracking() {
+        if (this._inactivityTimer) {
+            clearTimeout(this._inactivityTimer);
+            this._inactivityTimer = null;
+        }
+        if (this._heartbeatTimer) {
+            clearInterval(this._heartbeatTimer);
+            this._heartbeatTimer = null;
+        }
     },
 
     async claimStatistician() {
@@ -1892,11 +1943,13 @@ const App = {
             await DB.claimStatistician(name);
         }
         document.getElementById('stat-name-badge').textContent = name;
+        this.startInactivityTracking();
         this.showView('view-home');
         this.toast(`Recording as ${name}`, 'success');
     },
 
     async releaseStatistician() {
+        this.stopInactivityTracking();
         this.statisticianName = null;
         if (this.useFirebase) {
             await DB.releaseStatistician();
