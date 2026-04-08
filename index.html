@@ -139,7 +139,7 @@
             </a>
 
             <!-- Squad Roster -->
-            <div class="lp-card lp-card-tall" onclick="App.enterRecorder('squad')">
+            <div class="lp-card lp-card-tall" onclick="App.showView('view-squad')">
                 <span class="material-symbols-outlined lp-card-icon">groups</span>
                 <h3 class="lp-card-title">SQUAD</h3>
                 <p class="lp-card-desc">Manage your roster</p>
@@ -230,7 +230,7 @@
 <!-- ======== SQUAD ROSTER ======== -->
 <div id="view-squad" class="view">
     <div class="view-header">
-        <button class="btn-back" onclick="App.showView('view-home')">&larr;</button>
+        <button class="btn-back" onclick="App.showView('view-landing')">&larr;</button>
         <h2>Squad Roster</h2>
         <span id="squad-count" class="stat-badge"></span>
     </div>
