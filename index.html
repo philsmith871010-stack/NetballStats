@@ -19,6 +19,53 @@
 </head>
 <body>
 
+<!-- ======== CLUB SELECT ======== -->
+<div id="view-club-select" class="view">
+    <div class="lp">
+        <section class="lp-hero" style="height:280px">
+            <div class="lp-hero-bg"></div>
+            <div class="lp-hero-gradient"></div>
+            <div class="lp-hero-content">
+                <p class="lp-eyebrow">NetballStats</p>
+                <h1 class="lp-title" style="font-size:2.4rem">SELECT<br><em>YOUR CLUB</em></h1>
+            </div>
+        </section>
+        <section style="padding:0 1rem;margin-top:-0.5rem;position:relative;z-index:10">
+            <div id="club-list" class="club-list">
+                <p style="color:var(--text-dim);text-align:center;padding:2rem">Loading clubs...</p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- ======== CLUB LOGIN ======== -->
+<div id="view-club-login" class="view">
+    <div class="lp">
+        <section class="lp-hero" style="height:240px">
+            <div class="lp-hero-bg"></div>
+            <div class="lp-hero-gradient"></div>
+            <div class="lp-hero-content">
+                <p class="lp-eyebrow">Signing in to</p>
+                <h1 class="lp-title" style="font-size:2rem" id="club-login-name">Club</h1>
+            </div>
+        </section>
+        <section style="padding:1.5rem 1.25rem;position:relative;z-index:10;margin-top:-1rem">
+            <div class="form-group">
+                <label style="font-family:'Lexend',sans-serif;color:var(--text-dim)">Team Password</label>
+                <input type="password" id="club-password" class="input-large" placeholder="Enter password"
+                    onkeydown="if(event.key==='Enter')App.submitClubLogin()">
+            </div>
+            <p id="club-login-error" style="color:var(--danger);font-size:0.8rem;margin-bottom:0.75rem;min-height:1.2rem"></p>
+            <button class="lp-btn-primary" style="width:100%;justify-content:center" onclick="App.submitClubLogin()">
+                <span class="material-symbols-outlined">lock_open</span> Sign In
+            </button>
+            <button class="btn btn-outline btn-large" style="margin-top:0.75rem" onclick="App.showView('view-club-select');App.loadClubList()">
+                &larr; Back to clubs
+            </button>
+        </section>
+    </div>
+</div>
+
 <!-- ======== LANDING PAGE ======== -->
 <div id="view-landing" class="view active">
     <div class="lp">
@@ -28,10 +75,11 @@
             <div class="lp-hero-gradient"></div>
             <div class="lp-hero-content">
                 <p class="lp-eyebrow">Match Centre</p>
-                <h1 class="lp-title">HATFIELD <span>U13s</span><br><em>PURPLE SQUAD</em></h1>
+                <h1 class="lp-title club-brand-name">HATFIELD U13s</h1>
+                <p class="lp-sub club-brand-sub" style="font-family:'Lexend',sans-serif;font-size:0.75rem;color:rgba(255,255,255,0.35);letter-spacing:2px;margin-top:0.2rem"></p>
                 <div id="landing-status" class="landing-status"></div>
                 <div class="lp-hero-cta">
-                    <a href="live.html" class="lp-btn-primary">
+                    <a id="lp-live-link" href="live.html" class="lp-btn-primary">
                         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">cell_tower</span>
                         WATCH LIVE
                     </a>
@@ -95,21 +143,21 @@
 
         <!-- Bottom Nav -->
         <nav class="lp-bottom-nav">
-            <a href="live.html" class="lp-nav-item active">
+            <a href="live.html" class="lp-nav-item active lp-nav-live">
                 <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">cell_tower</span>
                 <span>Live</span>
             </a>
-            <a href="dashboard.html" class="lp-nav-item">
+            <a href="dashboard.html" class="lp-nav-item lp-nav-dash">
                 <span class="material-symbols-outlined">analytics</span>
                 <span>Stats</span>
-            </a>
-            <a href="live.html" class="lp-nav-item">
-                <span class="material-symbols-outlined">history</span>
-                <span>History</span>
             </a>
             <div class="lp-nav-item" onclick="App.enterRecorder()">
                 <span class="material-symbols-outlined">edit_note</span>
                 <span>Record</span>
+            </div>
+            <div class="lp-nav-item" onclick="App.switchClub()">
+                <span class="material-symbols-outlined">swap_horiz</span>
+                <span>Switch</span>
             </div>
         </nav>
     </div>

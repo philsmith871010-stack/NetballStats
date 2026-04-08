@@ -5,13 +5,14 @@
 
 // Firebase integration - loaded as module from index.html
 let DB = null;
+let ClubDB = null;
+let FirebaseModule = null;
 
 async function initFirebase() {
     try {
-        // Resolve path relative to the page, not this script
         const scriptPath = new URL('js/firebase.js', document.baseURI).href;
-        const module = await import(scriptPath);
-        DB = module.DB;
+        FirebaseModule = await import(scriptPath);
+        ClubDB = FirebaseModule.ClubDB;
         console.log('Firebase connected');
         return true;
     } catch (e) {
@@ -115,18 +116,33 @@ const App = {
     // ==========================================
     // INIT
     // ==========================================
-    async init() {
-        // Try Firebase first, fall back to localStorage
-        this.useFirebase = await initFirebase();
-        await this.loadData();
-        this.seedSampleDataIfEmpty();
+    clubId: null,
+    clubInfo: null,
 
-        // Restore live match if browser was refreshed mid-game
-        if (this.restoreMatchState()) {
-            // Already in match view
-        } else {
-            this.showView('view-landing');
-            this.checkLandingStatus();
+    async init() {
+        this.useFirebase = await initFirebase();
+
+        // Check if we have a saved club session
+        const savedClub = localStorage.getItem('netballstats_club_id');
+        if (savedClub && this.useFirebase) {
+            const ok = await this.selectClub(savedClub, true);
+            if (ok) {
+                if (this.restoreMatchState()) {
+                    // Already in match view
+                } else {
+                    this.showView('view-landing');
+                }
+                document.getElementById('setup-date').value = new Date().toISOString().split('T')[0];
+                this.populatePlayerRows('setup-team-players', 10);
+                return;
+            }
+        }
+
+        // Seed clubs if needed, then show selector
+        this.showView('view-club-select');
+        if (this.useFirebase) {
+            await this.seedClubs();
+            this.loadClubList();
         }
 
         document.getElementById('setup-date').value = new Date().toISOString().split('T')[0];
@@ -1589,7 +1605,8 @@ const App = {
     // Live URL
     getLiveUrl() {
         const base = window.location.href.replace(/\/[^/]*$/, '');
-        return `${base}/live.html`;
+        const clubParam = this.clubId ? `?club=${this.clubId}` : '';
+        return `${base}/live.html${clubParam}`;
     },
 
     shareLiveLink() {
@@ -1707,6 +1724,125 @@ const App = {
             this._confirmCallback = null;
         }
     },
+    // ==========================================
+    // CLUB SELECTION & AUTH
+    // ==========================================
+    async seedClubs() {
+        if (!this.useFirebase) return;
+        try {
+            const existing = await ClubDB.listClubs();
+            if (existing.length >= 3) return; // already seeded
+
+            const clubs = [
+                { id: 'hatfield-u13', name: 'Hatfield U13s', subtitle: 'Purple Squad', password: 'hatfield2024' },
+                { id: 'stahs-u13', name: 'STAHS U13', subtitle: 'St Albans High School', password: 'stahs2024' },
+                { id: 'pulse', name: 'Pulse NC', subtitle: 'Pulse Netball Club', password: 'pulse2024' },
+            ];
+            for (const c of clubs) {
+                const ex = await ClubDB.getClub(c.id);
+                if (!ex) {
+                    await ClubDB.createClub(c.id, { name: c.name, subtitle: c.subtitle, password: c.password });
+                    console.log(`Seeded club: ${c.id}`);
+                }
+            }
+        } catch (e) {
+            console.error('Failed to seed clubs:', e);
+        }
+    },
+
+    async loadClubList() {
+        if (!this.useFirebase) return;
+        try {
+            const clubs = await ClubDB.listClubs();
+            const container = document.getElementById('club-list');
+            if (!clubs.length) {
+                container.innerHTML = '<p style="color:var(--text-dim);text-align:center">No clubs set up yet. Seed the database first.</p>';
+                return;
+            }
+            container.innerHTML = clubs.map(c => `
+                <div class="club-card" onclick="App.showClubLogin('${c.id}')">
+                    <div class="club-card-info">
+                        <h3>${c.name || c.id}</h3>
+                        <p>${c.subtitle || ''}</p>
+                    </div>
+                    <span class="material-symbols-outlined" style="color:var(--primary);font-size:1.2rem">chevron_right</span>
+                </div>
+            `).join('');
+        } catch (e) {
+            console.error('Failed to load clubs:', e);
+        }
+    },
+
+    showClubLogin(clubId) {
+        this._pendingClubId = clubId;
+        document.getElementById('club-login-name').textContent = clubId;
+        document.getElementById('club-password').value = '';
+        document.getElementById('club-login-error').textContent = '';
+        this.showView('view-club-login');
+    },
+
+    async submitClubLogin() {
+        const password = document.getElementById('club-password').value;
+        const clubId = this._pendingClubId;
+        if (!password) { document.getElementById('club-login-error').textContent = 'Enter password'; return; }
+
+        const valid = await ClubDB.verifyPassword(clubId, password);
+        if (!valid) {
+            document.getElementById('club-login-error').textContent = 'Wrong password';
+            return;
+        }
+
+        await this.selectClub(clubId, false);
+        this.showView('view-landing');
+    },
+
+    async selectClub(clubId, silent) {
+        try {
+            const club = await ClubDB.getClub(clubId);
+            if (!club) { if (!silent) this.toast('Club not found', 'error'); return false; }
+
+            this.clubId = clubId;
+            this.clubInfo = club;
+            DB = FirebaseModule.createClubDB(clubId);
+
+            localStorage.setItem('netballstats_club_id', clubId);
+
+            // Update branding
+            const titleEls = document.querySelectorAll('.club-brand-name');
+            titleEls.forEach(el => { el.textContent = club.name || clubId; });
+            const subEls = document.querySelectorAll('.club-brand-sub');
+            subEls.forEach(el => { el.textContent = club.subtitle || ''; });
+
+            // Update links with club param
+            const clubParam = `?club=${clubId}`;
+            const liveLink = document.getElementById('lp-live-link');
+            if (liveLink) liveLink.href = `live.html${clubParam}`;
+            document.querySelectorAll('a[href*="live.html"]').forEach(a => { a.href = `live.html${clubParam}`; });
+            document.querySelectorAll('a[href*="dashboard.html"]').forEach(a => { a.href = `dashboard.html${clubParam}`; });
+
+            // Load data for this club
+            await this.loadData();
+            this.seedSampleDataIfEmpty();
+            this.checkLandingStatus();
+
+            return true;
+        } catch (e) {
+            console.error('Club select error:', e);
+            return false;
+        }
+    },
+
+    switchClub() {
+        localStorage.removeItem('netballstats_club_id');
+        this.clubId = null;
+        this.clubInfo = null;
+        DB = null;
+        this.teams = [];
+        this.matches = [];
+        this.showView('view-club-select');
+        if (this.useFirebase) this.loadClubList();
+    },
+
     // ==========================================
     // STATISTICIAN LOCK
     // ==========================================

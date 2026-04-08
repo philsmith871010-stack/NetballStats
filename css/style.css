@@ -340,6 +340,44 @@ html:has(#view-match.active) body {
 .lp-nav-item:active { transform: scale(0.92); }
 
 /* ========================================
+   CLUB SELECT
+   ======================================== */
+.club-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.club-card {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: rgba(25,25,28,0.6);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.club-card:active { transform: scale(0.97); }
+.club-card:hover { background: rgba(31,31,34,0.8); }
+.club-card-info { flex: 1; }
+.club-card-info h3 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.3px;
+}
+.club-card-info p {
+    font-family: 'Lexend', sans-serif;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.1rem;
+}
+
+/* ========================================
    APP HEADER (inner pages)
    ======================================== */
 .app-header {

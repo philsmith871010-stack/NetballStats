@@ -97,7 +97,7 @@
 
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-    import { getFirestore, collection, getDocs }
+    import { getFirestore, doc, getDoc, collection, getDocs }
         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
     const app = initializeApp({
@@ -110,6 +110,20 @@
     });
     const db = getFirestore(app);
 
+    // Get club from URL param
+    const urlParams = new URLSearchParams(window.location.search);
+    const clubId = urlParams.get('club') || 'hatfield-u13';
+    const prefix = `clubs/${clubId}`;
+
+    // Update page title
+    const clubDoc = await getDoc(doc(db, 'clubs', clubId));
+    if (clubDoc.exists()) {
+        const club = clubDoc.data();
+        document.querySelector('.dash-header h1').textContent = club.name || 'Dashboard';
+        document.querySelector('.dash-header p').textContent = club.subtitle || '';
+        document.querySelector('.nav-title').textContent = club.name || 'Dashboard';
+    }
+
     const tabNames = ['shooting', 'players', 'defence', 'results'];
     window.switchTab = function(tab) {
         document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', tabNames[i] === tab));
@@ -117,7 +131,7 @@
     };
 
     async function loadDashboard() {
-        const snap = await getDocs(collection(db, 'matches'));
+        const snap = await getDocs(collection(db, prefix + '/matches'));
         let matches = snap.docs.map(d => d.data());
         matches.sort((a, b) => a.id - b.id); // chronological
 
