@@ -173,20 +173,7 @@ const App = {
     },
 
     seedSampleDataIfEmpty() {
-        // Only seed sample data for hatfield-u13
-        if (this.clubId && this.clubId !== 'hatfield-u13') return;
-
-        if (this.teams.length === 0) {
-            this.teams = JSON.parse(JSON.stringify(this.SAMPLE_TEAMS));
-            this.saveTeams();
-        }
-        const seedKey = `netballstats_seeded_${this.clubId || 'default'}_v3`;
-        const seeded = localStorage.getItem(seedKey);
-        if (!seeded || this.matches.length < 8) {
-            this.matches = this.createSampleMatches();
-            this.saveMatches();
-            localStorage.setItem(seedKey, 'true');
-        }
+        // Disabled — no sample data, all real matches only
     },
 
     createSampleMatches() {
