@@ -767,7 +767,7 @@ const App = {
         grid.innerHTML = this.setupPlayers.map(player => {
             const taken = assignedIds.has(player.id) && !(this.lineup[pos] && this.lineup[pos].id === player.id);
             return `<button class="picker-player ${taken ? 'taken' : ''}"
-                onclick="${taken ? '' : `App.assignPlayer(${player.id})`}"
+                onclick="${taken ? '' : `App.assignPlayer('${player.id}')`}"
                 ${taken ? 'disabled' : ''}>
                 ${player.name}
             </button>`;
@@ -1009,7 +1009,7 @@ const App = {
         if (!this.match) return;
         // Accumulate time for everyone still on court
         Object.keys(this.match._courtOnSince).forEach(pid => {
-            this.accumulateCourtTime(parseInt(pid));
+            this.accumulateCourtTime(pid);
         });
         this.match._courtOnSince = {};
     },
@@ -1073,7 +1073,7 @@ const App = {
             const selected = this.selectedMatchPlayer && this.selectedMatchPlayer.id === player.id;
             html += `<div class="player-btn zone-${zone} ${selected ? 'selected' : ''}"
                 data-player-id="${player.id}" data-pos="${pos}"
-                onclick="App.selectMatchPlayer(${player.id}, '${pos}')">
+                onclick="App.selectMatchPlayer('${player.id}', '${pos}')">
                 <span class="pb-pos">${pos}</span>
                 <span class="pb-name">${player.name}</span>
                 <span class="pb-stat">${statLine}</span>
@@ -1100,7 +1100,7 @@ const App = {
     // PLAYER SELECTION & ACTION RENDERING
     // ==========================================
     selectMatchPlayer(playerId, pos) {
-        if (isNaN(playerId)) return;
+        if (!playerId) return;
 
         // Toggle off if already selected
         if (this.selectedMatchPlayer && this.selectedMatchPlayer.id === playerId) {
@@ -1113,7 +1113,7 @@ const App = {
 
         // Highlight selected
         document.querySelectorAll('.player-btn').forEach(b => {
-            b.classList.toggle('selected', parseInt(b.dataset.playerId) === playerId);
+            b.classList.toggle('selected', b.dataset.playerId === playerId);
         });
 
         // Update ticker
@@ -1380,7 +1380,7 @@ const App = {
             const p = this.match.court[pos];
             if (!p) return '';
             return `<button class="sub-btn" data-id="${p.id}" data-pos="${pos}"
-                onclick="App.selectSubOff(${p.id}, '${pos}')">
+                onclick="App.selectSubOff('${p.id}', '${pos}')">
                 ${pos}: ${p.name}
             </button>`;
         }).join('');
@@ -1392,7 +1392,7 @@ const App = {
         if (benchPlayers.length) {
             bench.innerHTML = benchPlayers.map(p =>
                 `<button class="sub-btn" data-id="${p.id}"
-                    onclick="App.selectSubOn(${p.id})">
+                    onclick="App.selectSubOn('${p.id}')">
                     ${p.name}
                 </button>`
             ).join('');
@@ -1413,7 +1413,7 @@ const App = {
         this.subState.playerOff = { id: playerId, pos };
         this.subState.newPos = pos; // default to same position
         document.querySelectorAll('#subs-on-court .sub-btn').forEach(btn => {
-            btn.classList.toggle('selected', parseInt(btn.dataset.id) === playerId);
+            btn.classList.toggle('selected', btn.dataset.id === playerId);
         });
         // Pre-select position
         document.querySelectorAll('#subs-positions .sub-btn').forEach(btn => {
@@ -1425,7 +1425,7 @@ const App = {
     selectSubOn(playerId) {
         this.subState.playerOn = { id: playerId };
         document.querySelectorAll('#subs-bench .sub-btn').forEach(btn => {
-            btn.classList.toggle('selected', parseInt(btn.dataset.id) === playerId);
+            btn.classList.toggle('selected', btn.dataset.id === playerId);
         });
         this.updateSubConfirm();
     },
