@@ -1570,81 +1570,113 @@ const App = {
         }
     },
 
+    // Stat definitions for summary rendering: key -> { label, kind }
+    // kind: 'positive' | 'negative' | 'neutral' | 'goal' | 'shooting'
+    STAT_DEFS: [
+        { key: 'goal', label: 'Goals', kind: 'goal' },
+        { key: '_shotpct', label: 'Shot%', kind: 'shooting' },
+        { key: 'miss', label: 'Miss', kind: 'negative' },
+        { key: 'centre_pass', label: 'CP', kind: 'neutral' },
+        { key: 'feed', label: 'Feed', kind: 'positive' },
+        { key: 'intercept', label: 'Int', kind: 'positive' },
+        { key: 'deflection', label: 'Defl', kind: 'positive' },
+        { key: 'rebound', label: 'Reb', kind: 'positive' },
+        { key: 'pickup', label: 'PU', kind: 'positive' },
+        { key: 'turnover', label: 'TO', kind: 'negative' },
+        { key: 'unforced_error', label: 'UE', kind: 'negative' },
+        { key: 'not_received', label: 'NR', kind: 'negative' },
+        { key: 'footwork', label: 'FW', kind: 'negative' },
+        { key: 'offside', label: 'OS', kind: 'negative' },
+        { key: 'penalty_contact', label: 'Con', kind: 'negative' },
+        { key: 'penalty_obstruction', label: 'Obs', kind: 'negative' },
+    ],
+
+    renderStatValues(s, { includeZero = false } = {}) {
+        const goals = s.goal || 0;
+        const misses = s.miss || 0;
+        const attempts = goals + misses;
+        const pct = attempts > 0 ? Math.round((goals / attempts) * 100) + '%' : '–';
+
+        return this.STAT_DEFS.map(def => {
+            let num;
+            if (def.key === '_shotpct') {
+                if (!attempts && !includeZero) return '';
+                num = pct;
+            } else {
+                const v = s[def.key] || 0;
+                if (!v && !includeZero) return '';
+                num = v;
+            }
+            return `<div class="stat-val kind-${def.kind}">
+                <span class="num">${num}</span>
+                <span class="label">${def.label}</span>
+            </div>`;
+        }).join('');
+    },
+
     renderTeamSummary(m) {
-        const allStats = {};
+        const totals = {};
         Object.values(m.playerStats).forEach(ps => {
             Object.entries(ps).forEach(([k, v]) => {
-                allStats[k] = (allStats[k] || 0) + v;
+                totals[k] = (totals[k] || 0) + v;
             });
         });
 
-        const goals = allStats.goal || 0;
-        const misses = allStats.miss || 0;
+        const goals = totals.goal || 0;
+        const misses = totals.miss || 0;
         const attempts = goals + misses;
         const pct = attempts > 0 ? Math.round((goals / attempts) * 100) : 0;
 
-        const rows = [
-            ['Goals', goals],
-            ['Shots', `${goals}/${attempts} (${pct}%)`],
-            ['Centre Passes', allStats.centre_pass || 0],
-            ['Intercepts', allStats.intercept || 0],
-            ['Turnovers', allStats.turnover || 0],
-            ['Rebounds', allStats.rebound || 0],
-        ];
+        const values = this.renderStatValues(totals, { includeZero: true });
 
-        if (m.trackingLevel === 'detailed') {
-            rows.push(
-                ['Feeds', allStats.feed || 0],
-                ['Assists', allStats.assist || 0],
-                ['Deflections', allStats.deflection || 0],
-                ['Pickups', allStats.pickup || 0],
-                ['Contact Pen.', allStats.penalty_contact || 0],
-                ['Obstruction Pen.', allStats.penalty_obstruction || 0],
-            );
-        }
-
-        return `<table class="stats-table">
-            <thead><tr><th>Stat</th><th>${m.homeTeam}</th></tr></thead>
-            <tbody>${rows.map(([label, val]) =>
-                `<tr><td>${label}</td><td>${val}</td></tr>`
-            ).join('')}</tbody>
-        </table>`;
+        return `<div class="team-stats-card">
+            <div class="ts-header">
+                <span class="ts-team">${m.homeTeam}</span>
+                <span class="ts-score">${m.homeScore} – ${m.awayScore}</span>
+            </div>
+            <div class="ts-shooting">
+                <span>Shooting: <strong>${goals}/${attempts}</strong></span>
+                <span class="ts-pct">${pct}%</span>
+            </div>
+            <div class="stat-values stat-values-grid">${values}</div>
+            ${m.cpToGoal || m.toToGoal ? `
+                <div class="ts-possession">
+                    <span>CP → Goal: <strong>${m.cpToGoal || 0}</strong></span>
+                    <span>TO → Goal: <strong>${m.toToGoal || 0}</strong></span>
+                </div>` : ''}
+        </div>`;
     },
 
     renderPlayerSummary(m) {
-        const cols = m.trackingLevel === 'basic'
-            ? ['G', 'Sh%', 'CP', 'Int', 'TO', 'Reb']
-            : ['G', 'Sh%', 'Feed', 'Ast', 'CP', 'Int', 'Defl', 'TO', 'Reb', 'PU', 'Pen'];
+        // Build position map from court + events
+        const playerPos = {};
+        if (m.court) {
+            Object.entries(m.court).forEach(([pos, p]) => { if (p) playerPos[p.id] = pos; });
+        }
+        if (m.events) {
+            m.events.forEach(e => { if (e.playerId !== null && e.position) playerPos[e.playerId] = e.position; });
+        }
 
-        const header = `<tr><th>Player</th>${cols.map(c => `<th>${c}</th>`).join('')}</tr>`;
-
-        const rows = m.players.map(p => {
+        const cards = m.players.map(p => {
             const s = m.playerStats[p.id] || {};
-            const goals = s.goal || 0;
-            const misses = s.miss || 0;
-            const attempts = goals + misses;
-            const pct = attempts > 0 ? Math.round((goals / attempts) * 100) + '%' : '-';
-
-            let cells;
-            if (m.trackingLevel === 'basic') {
-                cells = [goals || '-', pct, s.centre_pass || '-', s.intercept || '-', s.turnover || '-', s.rebound || '-'];
-            } else {
-                cells = [goals || '-', pct, s.feed || '-', s.assist || '-', s.centre_pass || '-',
-                    s.intercept || '-', s.deflection || '-', s.turnover || '-', s.rebound || '-',
-                    s.pickup || '-', ((s.penalty_contact || 0) + (s.penalty_obstruction || 0)) || '-'];
-            }
-
-            // Highlight if player has any stats
             const hasStats = Object.keys(s).length > 0;
-            return `<tr${hasStats ? '' : ' style="opacity:0.5"'}>
-                <td>${p.name}</td>${cells.map(c => `<td>${c}</td>`).join('')}
-            </tr>`;
-        });
+            const pos = playerPos[p.id] || '';
+            const mins = m.courtTime && m.courtTime[p.id] ? Math.round(m.courtTime[p.id] / 60) : 0;
+            const values = this.renderStatValues(s, { includeZero: false });
 
-        return `<div style="overflow-x:auto"><table class="stats-table">
-            <thead>${header}</thead>
-            <tbody>${rows.join('')}</tbody>
-        </table></div>`;
+            return `<div class="stat-card player-stat-card${hasStats ? '' : ' no-stats'}">
+                <div class="sc-header">
+                    ${pos ? `<span class="stat-pos">${pos}</span>` : ''}
+                    <span class="stat-name">${p.name}</span>
+                    ${mins ? `<span class="stat-mins">${mins}m</span>` : ''}
+                </div>
+                <div class="stat-values stat-values-grid">
+                    ${hasStats ? values : '<span class="no-stats-text">No stats recorded</span>'}
+                </div>
+            </div>`;
+        }).join('');
+
+        return `<div class="player-stats-grid">${cards}</div>`;
     },
 
     renderQuarterSummary(m) {
@@ -1700,7 +1732,9 @@ const App = {
 
         const statKeys = m.trackingLevel === 'basic'
             ? ['goal', 'miss', 'centre_pass', 'intercept', 'turnover', 'rebound']
-            : ['goal', 'miss', 'feed', 'assist', 'centre_pass', 'intercept', 'deflection', 'turnover', 'rebound', 'pickup', 'penalty_contact', 'penalty_obstruction'];
+            : ['goal', 'miss', 'centre_pass', 'feed', 'intercept', 'deflection', 'rebound', 'pickup',
+               'turnover', 'unforced_error', 'not_received', 'footwork', 'offside',
+               'penalty_contact', 'penalty_obstruction'];
 
         let csv = `NetballStats Export\n`;
         csv += `${m.homeTeam} vs ${m.awayTeam}\n`;
