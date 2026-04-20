@@ -149,6 +149,49 @@
         });
     };
 
+    // Full list of stats with labels + kind for color coding
+    const STAT_DEFS = [
+        { key: 'goal', label: 'Goals', kind: 'goal' },
+        { key: '_shotpct', label: 'Shot%', kind: 'shooting' },
+        { key: 'miss', label: 'Miss', kind: 'negative' },
+        { key: 'centre_pass', label: 'CP', kind: 'neutral' },
+        { key: 'feed', label: 'Feed', kind: 'positive' },
+        { key: 'intercept', label: 'Int', kind: 'positive' },
+        { key: 'deflection', label: 'Defl', kind: 'positive' },
+        { key: 'rebound', label: 'Reb', kind: 'positive' },
+        { key: 'pickup', label: 'PU', kind: 'positive' },
+        { key: 'turnover', label: 'TO', kind: 'negative' },
+        { key: 'unforced_error', label: 'UE', kind: 'negative' },
+        { key: 'not_received', label: 'NR', kind: 'negative' },
+        { key: 'footwork', label: 'FW', kind: 'negative' },
+        { key: 'offside', label: 'OS', kind: 'negative' },
+        { key: 'penalty_contact', label: 'Con', kind: 'negative' },
+        { key: 'penalty_obstruction', label: 'Obs', kind: 'negative' },
+    ];
+
+    function renderStatValues(s, { includeZero = false } = {}) {
+        const goals = s.goal || 0;
+        const misses = s.miss || 0;
+        const attempts = goals + misses;
+        const pct = attempts > 0 ? Math.round((goals / attempts) * 100) + '%' : '–';
+
+        return STAT_DEFS.map(def => {
+            let num;
+            if (def.key === '_shotpct') {
+                if (!attempts && !includeZero) return '';
+                num = pct;
+            } else {
+                const v = s[def.key] || 0;
+                if (!v && !includeZero) return '';
+                num = v;
+            }
+            return `<div class="stat-val kind-${def.kind}">
+                <span class="num">${num}</span>
+                <span class="label">${def.label}</span>
+            </div>`;
+        }).join('');
+    }
+
     function getEventDisplay(e) {
         const icons = {
             goal: '&#9917;', miss: '&#10060;', opp_goal: '&#9917;',
@@ -294,19 +337,7 @@
                 const courtMins = d.courtTime && d.courtTime[p.id] ? Math.round(d.courtTime[p.id]/60) : '';
                 const idxColor = idx >= 70 ? 'var(--success)' : idx >= 40 ? 'var(--accent-light)' : 'var(--danger)';
 
-                let statsHtml = '';
-                if (attempts > 0) {
-                    statsHtml += `<div class="stat-val goals"><span class="num">${goals}</span><span class="label">Goals</span></div>`;
-                    statsHtml += `<div class="stat-val shooting"><span class="num">${pct}</span><span class="label">Shot%</span></div>`;
-                }
-                if (s.intercept) statsHtml += `<div class="stat-val"><span class="num">${s.intercept}</span><span class="label">Int</span></div>`;
-                if (s.deflection) statsHtml += `<div class="stat-val"><span class="num">${s.deflection}</span><span class="label">Def</span></div>`;
-                if (s.rebound) statsHtml += `<div class="stat-val"><span class="num">${s.rebound}</span><span class="label">Reb</span></div>`;
-                if (s.turnover) statsHtml += `<div class="stat-val"><span class="num" style="color:var(--danger)">${s.turnover}</span><span class="label">TO</span></div>`;
-                if (s.unforced_error) statsHtml += `<div class="stat-val"><span class="num" style="color:var(--danger)">${s.unforced_error}</span><span class="label">UE</span></div>`;
-                if (s.centre_pass) statsHtml += `<div class="stat-val"><span class="num">${s.centre_pass}</span><span class="label">CP</span></div>`;
-                if (s.feed) statsHtml += `<div class="stat-val"><span class="num">${s.feed}</span><span class="label">Feed</span></div>`;
-                if (s.not_received) statsHtml += `<div class="stat-val"><span class="num" style="color:var(--danger)">${s.not_received}</span><span class="label">NR</span></div>`;
+                const statsHtml = renderStatValues(s);
 
                 return `<div class="stat-card">
                     ${pos ? `<span class="stat-pos">${pos}</span>` : ''}
@@ -433,39 +464,29 @@
             ).join('')}</div>`;
         }
 
-        // Team shooting
+        // Team stats - consolidated totals across all players
+        const totals = {};
+        Object.values(m.playerStats || {}).forEach(ps => {
+            Object.entries(ps).forEach(([k, v]) => { totals[k] = (totals[k] || 0) + v; });
+        });
         html += `<div class="detail-section">
             <div class="detail-section-title">Team Stats</div>
-            <div class="stat-card"><span class="stat-name">Shooting</span>
-                <div class="stat-values">
-                    <div class="stat-val goals"><span class="num">${goals}</span><span class="label">Goals</span></div>
-                    <div class="stat-val"><span class="num">${attempts}</span><span class="label">Shots</span></div>
-                    <div class="stat-val shooting"><span class="num">${pct}%</span><span class="label">Accuracy</span></div>
-                </div>
+            <div class="stat-card team-totals">
+                <span class="stat-name">${m.homeTeam}</span>
+                <div class="stat-values">${renderStatValues(totals, { includeZero: true })}</div>
             </div>
         </div>`;
 
-        // Player stats
+        // Player stats - one card per player, all non-zero stats
         if (m.players && m.playerStats) {
             html += `<div class="detail-section"><div class="detail-section-title">Player Stats</div>`;
             m.players.forEach(p => {
                 const s = m.playerStats[p.id] || {};
                 if (!Object.keys(s).length) return;
-                const pg = s.goal || 0, pm = s.miss || 0, pa = pg + pm;
-                const ppct = pa > 0 ? Math.round((pg/pa)*100) + '%' : '';
-
-                let vals = '';
-                if (pa > 0) vals += `<div class="stat-val goals"><span class="num">${pg}</span><span class="label">Goals</span></div>`;
-                if (ppct) vals += `<div class="stat-val shooting"><span class="num">${ppct}</span><span class="label">Shot%</span></div>`;
-                if (s.intercept) vals += `<div class="stat-val"><span class="num">${s.intercept}</span><span class="label">Int</span></div>`;
-                if (s.turnover) vals += `<div class="stat-val"><span class="num">${s.turnover}</span><span class="label">TO</span></div>`;
-                if (s.rebound) vals += `<div class="stat-val"><span class="num">${s.rebound}</span><span class="label">Reb</span></div>`;
-                if (s.centre_pass) vals += `<div class="stat-val"><span class="num">${s.centre_pass}</span><span class="label">CP</span></div>`;
-                if (s.feed) vals += `<div class="stat-val"><span class="num">${s.feed}</span><span class="label">Feed</span></div>`;
-                if (s.assist) vals += `<div class="stat-val"><span class="num">${s.assist}</span><span class="label">Ast</span></div>`;
-                if (s.deflection) vals += `<div class="stat-val"><span class="num">${s.deflection}</span><span class="label">Def</span></div>`;
-
-                html += `<div class="stat-card"><span class="stat-name">${p.name}</span><div class="stat-values">${vals}</div></div>`;
+                html += `<div class="stat-card">
+                    <span class="stat-name">${p.name}</span>
+                    <div class="stat-values">${renderStatValues(s)}</div>
+                </div>`;
             });
             html += `</div>`;
         }

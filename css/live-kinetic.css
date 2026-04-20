@@ -160,6 +160,13 @@ body {
 .stat-val .label { font-family: 'Lexend', sans-serif; font-size: 0.45rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-dim); }
 .stat-val.goals .num { color: var(--success); }
 .stat-val.shooting .num { color: var(--accent-light); }
+.stat-val.kind-goal .num { color: var(--success); }
+.stat-val.kind-shooting .num { color: var(--accent-light); }
+.stat-val.kind-positive .num { color: var(--success); }
+.stat-val.kind-negative .num { color: var(--danger); }
+.stat-val.kind-neutral .num { color: var(--text); }
+.stat-values { flex-wrap: wrap; row-gap: 0.4rem; }
+.team-totals .stat-values { flex: 1; justify-content: flex-start; }
 
 /* Lineup */
 .lineup-court { padding: 0.75rem; }
