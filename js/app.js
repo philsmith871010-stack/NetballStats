@@ -1931,17 +1931,32 @@ const App = {
         if (!this.useFirebase) return;
         try {
             const existing = await ClubDB.listClubs();
-            if (existing.length >= 3) return; // already seeded
+            if (existing.length >= 4) return; // already seeded
 
             const clubs = [
                 { id: 'hatfield-u13', name: 'Hatfield U13s', subtitle: 'Purple Squad', password: 'hatfield2024' },
+                { id: 'hatfield-regional', name: 'Hatfield Regional Squad', subtitle: 'Regional Squad', password: 'hatfield2024' },
                 { id: 'stahs-u13', name: 'STAHS U13', subtitle: 'St Albans High School', password: 'stahs2024' },
                 { id: 'pulse', name: 'Pulse NC', subtitle: 'Pulse Netball Club', password: 'pulse2024' },
+            ];
+            const rosterPlayers = [
+                'Amber', 'Daisy', 'Alexa', 'Poppy', 'Aliska',
+                'Gracie', 'Ellam', 'Immy', 'Maisy', 'Bella', 'Martha',
             ];
             for (const c of clubs) {
                 const ex = await ClubDB.getClub(c.id);
                 if (!ex) {
                     await ClubDB.createClub(c.id, { name: c.name, subtitle: c.subtitle, password: c.password });
+                    // Seed squad roster for Hatfield clubs
+                    if (c.id === 'hatfield-regional') {
+                        const clubDB = FirebaseModule.createClubDB(c.id);
+                        const squad = rosterPlayers.map((name, i) => ({
+                            id: this.generatePlayerId(),
+                            name,
+                            number: String(i + 1),
+                        }));
+                        await clubDB.saveSquad(squad);
+                    }
                     console.log(`Seeded club: ${c.id}`);
                 }
             }
