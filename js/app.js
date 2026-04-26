@@ -1565,6 +1565,189 @@ const App = {
     },
 
     // ==========================================
+    // EVENT LOG (view, delete, add missing)
+    // ==========================================
+    showEventLog() {
+        this.cancelPlayerSelection();
+        const panel = document.getElementById('match-event-log');
+        panel.classList.remove('hidden');
+
+        // Populate period dropdown
+        const periodSel = document.getElementById('evlog-period');
+        const total = this.match.totalPeriods || 4;
+        periodSel.innerHTML = '';
+        for (let i = 1; i <= total; i++) {
+            const opt = document.createElement('option');
+            opt.value = i;
+            opt.textContent = this.getPeriodLabel(i);
+            if (i === this.match.quarter) opt.selected = true;
+            periodSel.appendChild(opt);
+        }
+
+        // Populate player dropdown
+        const playerSel = document.getElementById('evlog-player');
+        playerSel.innerHTML = '<option value="">Player...</option>';
+        this.match.players.forEach(p => {
+            playerSel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+        });
+
+        // Populate action dropdown
+        const actionSel = document.getElementById('evlog-action');
+        const actions = this.trackingLevel === 'basic' ? this.ACTIONS_BASIC : this.ACTIONS_DETAILED;
+        actionSel.innerHTML = '<option value="">Action...</option>';
+        actions.forEach(a => {
+            actionSel.innerHTML += `<option value="${a.key}">${a.label}</option>`;
+        });
+        actionSel.innerHTML += `<option value="opp_goal">Opp Goal</option>`;
+
+        this.renderEventLog();
+    },
+
+    renderEventLog() {
+        const list = document.getElementById('evlog-list');
+        if (!this.match.events.length) {
+            list.innerHTML = '<p style="color:var(--text-dim);font-size:0.8rem;text-align:center;padding:1rem">No events yet</p>';
+            return;
+        }
+        list.innerHTML = [...this.match.events].reverse().map((e, ri) => {
+            const idx = this.match.events.length - 1 - ri;
+            const isSystem = e.action === 'system';
+            const label = e.action === 'opp_goal' ? `${e.playerName} scored`
+                : isSystem ? e.playerName
+                : `${e.playerName} - ${e.action.replace(/_/g, ' ')}`;
+            const periodText = this.getPeriodLabel(e.quarter);
+            return `<div class="evlog-item ${isSystem ? 'evlog-system' : ''}">
+                <span class="evlog-time">${periodText} ${e.time || ''}</span>
+                <span class="evlog-text">${label}</span>
+                ${!isSystem ? `<button class="evlog-delete" onclick="App.deleteEvent(${idx})">&#10005;</button>` : ''}
+            </div>`;
+        }).join('');
+    },
+
+    deleteEvent(index) {
+        const e = this.match.events[index];
+        if (!e || e.action === 'system') return;
+
+        this.match.events.splice(index, 1);
+        this.recalcFromEvents();
+        this.renderEventLog();
+        this.renderCourtPlayers();
+        this.updateScoreDisplay();
+        this.syncLive('Event removed');
+        this.toast('Event deleted', 'success');
+    },
+
+    addMissingEvent() {
+        const quarter = parseInt(document.getElementById('evlog-period').value);
+        const playerId = document.getElementById('evlog-player').value;
+        const actionKey = document.getElementById('evlog-action').value;
+
+        if (!actionKey) {
+            this.toast('Select an action', 'error');
+            return;
+        }
+
+        let event;
+        if (actionKey === 'opp_goal') {
+            event = {
+                id: Date.now(),
+                quarter: quarter,
+                time: '',
+                playerId: null,
+                playerName: this.match.awayTeam,
+                position: null,
+                action: 'opp_goal',
+                team: 'away',
+            };
+        } else {
+            if (!playerId) {
+                this.toast('Select a player', 'error');
+                return;
+            }
+            const player = this.match.players.find(p => p.id === playerId);
+            if (!player) return;
+
+            let pos = '';
+            for (const [p, pl] of Object.entries(this.match.court)) {
+                if (pl && pl.id === playerId) { pos = p; break; }
+            }
+
+            event = {
+                id: Date.now(),
+                quarter: quarter,
+                time: '',
+                playerId: playerId,
+                playerName: player.name,
+                position: pos,
+                action: actionKey,
+                team: 'home',
+            };
+        }
+        this.match.events.push(event);
+        this.recalcFromEvents();
+        this.renderEventLog();
+        this.renderCourtPlayers();
+        this.updateScoreDisplay();
+        this.syncLive(`Added: ${player.name} ${actionKey.replace(/_/g, ' ')}`);
+        this.toast(`Added ${actionKey.replace(/_/g, ' ')} for ${player.name}`, 'success');
+
+        // Reset dropdowns
+        document.getElementById('evlog-player').value = '';
+        document.getElementById('evlog-action').value = '';
+    },
+
+    recalcFromEvents() {
+        // Rebuild playerStats and scores from the events array
+        const stats = {};
+        this.match.players.forEach(p => { stats[p.id] = {}; });
+
+        let homeScore = 0, awayScore = 0;
+        const total = this.match.totalPeriods || 4;
+        const qScores = Array.from({ length: total }, () => ({ home: 0, away: 0 }));
+        let cpToGoal = 0, toToGoal = 0;
+
+        this.match.events.forEach((e, i) => {
+            if (e.action === 'system') return;
+
+            if (e.action === 'opp_goal') {
+                awayScore++;
+                if (e.quarter >= 1 && e.quarter <= total) qScores[e.quarter - 1].away++;
+                return;
+            }
+
+            if (e.team === 'home' && e.playerId) {
+                if (!stats[e.playerId]) stats[e.playerId] = {};
+                stats[e.playerId][e.action] = (stats[e.playerId][e.action] || 0) + 1;
+            }
+
+            if (e.action === 'goal') {
+                homeScore++;
+                if (e.quarter >= 1 && e.quarter <= total) qScores[e.quarter - 1].home++;
+                // CP/TO to goal tracking
+                const prior = this.match.events.slice(Math.max(0, i - 10), i);
+                for (let j = prior.length - 1; j >= 0; j--) {
+                    const pe = prior[j];
+                    if (pe.team !== 'home') continue;
+                    if (pe.action === 'centre_pass') { cpToGoal++; break; }
+                    if (['intercept', 'turnover', 'rebound', 'deflection', 'pickup'].includes(pe.action)) { toToGoal++; break; }
+                    if (pe.action === 'opp_goal' || pe.action === 'system') break;
+                }
+            }
+        });
+
+        this.match.playerStats = stats;
+        this.match.homeScore = homeScore;
+        this.match.awayScore = awayScore;
+        this.match.quarterScores = qScores;
+        this.match.cpToGoal = cpToGoal;
+        this.match.toToGoal = toToGoal;
+    },
+
+    closeEventLog() {
+        document.getElementById('match-event-log').classList.add('hidden');
+    },
+
+    // ==========================================
     // MATCH SUMMARY
     // ==========================================
     viewMatchSummary(index) {

@@ -447,6 +447,7 @@
     <div class="match-toolbar-bottom">
         <button class="btn btn-tool btn-away-goal" onclick="App.recordAwayGoal()">+1 Opp</button>
         <button class="btn btn-tool" id="btn-undo" onclick="App.undoLastEvent()" disabled>Undo</button>
+        <button class="btn btn-tool" onclick="App.showEventLog()">Events</button>
         <button class="btn btn-tool" onclick="App.showSubstitution()">Subs</button>
         <button class="btn btn-tool" onclick="App.showSwapPositions()">Swap</button>
         <button class="btn btn-tool" id="btn-quarter" onclick="App.nextQuarter()">Next Qtr</button>
@@ -489,6 +490,26 @@
             <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem">Tap two players to swap their positions</p>
             <div id="swap-players" class="subs-grid"></div>
             <button class="btn btn-primary" id="btn-confirm-swap" onclick="App.confirmSwap()" disabled style="margin-top:0.75rem">Confirm Swap</button>
+        </div>
+    </div>
+
+    <!-- Event Log Panel (overlay) -->
+    <div id="match-event-log" class="match-subs-overlay hidden">
+        <div class="match-subs-panel event-log-panel">
+            <div class="subs-header">
+                <h3>Event Log</h3>
+                <button class="btn btn-small btn-outline" onclick="App.closeEventLog()">Close</button>
+            </div>
+            <div class="event-log-add">
+                <h4>Add Missing Event</h4>
+                <div class="event-log-add-row">
+                    <select id="evlog-period" class="input-small"></select>
+                    <select id="evlog-player" class="input-small"></select>
+                    <select id="evlog-action" class="input-small"></select>
+                    <button class="btn btn-small btn-primary" onclick="App.addMissingEvent()">Add</button>
+                </div>
+            </div>
+            <div class="event-log-list" id="evlog-list"></div>
         </div>
     </div>
 

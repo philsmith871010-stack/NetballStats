@@ -1292,6 +1292,87 @@ hr {
     background: rgba(196,162,101,0.12);
 }
 
+/* ---- Event Log Panel ---- */
+.event-log-panel {
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+.event-log-add {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem;
+}
+.event-log-add h4 {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    margin-bottom: 0.4rem;
+}
+.event-log-add-row {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.event-log-add-row select {
+    flex: 1;
+    min-width: 0;
+    padding: 0.4rem 0.3rem;
+    font-size: 0.75rem;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-xs);
+}
+.event-log-list {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.evlog-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.78rem;
+}
+.evlog-item.evlog-system {
+    opacity: 0.5;
+    font-style: italic;
+}
+.evlog-time {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    min-width: 40px;
+}
+.evlog-text {
+    flex: 1;
+    font-weight: 500;
+}
+.evlog-delete {
+    background: none;
+    border: 1.5px solid var(--danger);
+    color: var(--danger);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.evlog-delete:active {
+    background: var(--danger);
+    color: #fff;
+}
+
 /* ---- Event list ---- */
 .event-list {
     display: flex;
