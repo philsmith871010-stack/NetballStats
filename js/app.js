@@ -96,6 +96,7 @@ const App = {
         { key: 'offside', label: 'Offside', icon: '&#128679;', css: 'action-negative', positions: null },
         { key: 'penalty_contact', label: 'Contact', icon: '&#9888;', css: 'action-negative', positions: null },
         { key: 'penalty_obstruction', label: 'Obstruct', icon: '&#128683;', css: 'action-negative', positions: null },
+        { key: 'penalty_breaking', label: 'Breaking', icon: '&#9940;', css: 'action-negative', positions: null },
     ],
 
     // ---- Sample Data ----
@@ -1160,7 +1161,7 @@ const App = {
     // Action categories
     SHOOTING_ACTIONS: ['goal', 'miss'],
     POSITIVE_ACTIONS: ['centre_pass', 'feed', 'intercept', 'deflection', 'rebound', 'pickup'],
-    NEGATIVE_ACTIONS: ['turnover', 'unforced_error', 'not_received', 'footwork', 'offside', 'penalty_contact', 'penalty_obstruction'],
+    NEGATIVE_ACTIONS: ['turnover', 'unforced_error', 'not_received', 'footwork', 'offside', 'penalty_contact', 'penalty_obstruction', 'penalty_breaking'],
 
     renderActionButtons(pos) {
         const actions = this.trackingLevel === 'basic' ? this.ACTIONS_BASIC : this.ACTIONS_DETAILED;
@@ -1626,6 +1627,7 @@ const App = {
         { key: 'offside', label: 'OS', kind: 'negative' },
         { key: 'penalty_contact', label: 'Con', kind: 'negative' },
         { key: 'penalty_obstruction', label: 'Obs', kind: 'negative' },
+        { key: 'penalty_breaking', label: 'Brk', kind: 'negative' },
     ],
 
     renderStatValues(s, { includeZero = false } = {}) {
@@ -1774,7 +1776,7 @@ const App = {
             ? ['goal', 'miss', 'centre_pass', 'intercept', 'turnover', 'rebound']
             : ['goal', 'miss', 'centre_pass', 'feed', 'intercept', 'deflection', 'rebound', 'pickup',
                'turnover', 'unforced_error', 'not_received', 'footwork', 'offside',
-               'penalty_contact', 'penalty_obstruction'];
+               'penalty_contact', 'penalty_obstruction', 'penalty_breaking'];
 
         let csv = `NetballStats Export\n`;
         csv += `${m.homeTeam} vs ${m.awayTeam}\n`;

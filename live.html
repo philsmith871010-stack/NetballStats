@@ -178,6 +178,7 @@
         { key: 'offside', label: 'OS', kind: 'negative' },
         { key: 'penalty_contact', label: 'Con', kind: 'negative' },
         { key: 'penalty_obstruction', label: 'Obs', kind: 'negative' },
+        { key: 'penalty_breaking', label: 'Brk', kind: 'negative' },
     ];
 
     function renderStatValues(s, { includeZero = false } = {}) {
@@ -209,7 +210,8 @@
             intercept: '&#128170;', deflection: '&#128170;', rebound: '&#8593;',
             turnover: '&#8635;', centre_pass: '&#9654;', feed: '&#10145;',
             assist: '&#127942;', pickup: '&#9995;', system: '&#8505;',
-            penalty_contact: '&#9888;', penalty_obstruction: '&#128683;'
+            penalty_contact: '&#9888;', penalty_obstruction: '&#128683;',
+            penalty_breaking: '&#9940;'
         };
         const classes = {
             goal: 'goal', miss: 'turnover', opp_goal: 'opp',
@@ -330,7 +332,7 @@
                     (s.rebound||0)*3 + (s.feed||0)*2 + (s.centre_pass||0)*2 + (s.pickup||0)*2;
                 const negatives = (s.turnover||0)*4 + (s.unforced_error||0)*3 + (s.not_received||0)*2 +
                     (s.footwork||0)*2 + (s.offside||0)*2 + (s.penalty_contact||0)*2 +
-                    (s.penalty_obstruction||0)*2 + (s.miss||0)*1;
+                    (s.penalty_obstruction||0)*2 + (s.penalty_breaking||0)*2 + (s.miss||0)*1;
                 const raw = positives - negatives;
                 // Normalize: expect ~20 raw for good game, cap at 50
                 return Math.max(0, Math.min(100, Math.round((raw / 40) * 100)));
