@@ -47,6 +47,22 @@ const App = {
     // ---- Constants ----
     POSITIONS: ['GS', 'GA', 'WA', 'C', 'WD', 'GD', 'GK'],
     SHOOTING_POSITIONS: ['GS', 'GA'],
+
+    // Match format helpers
+    FORMAT_CONFIG: {
+        '4q': { periods: 4, label: 'Quarter', short: 'Q', plural: 'Quarters' },
+        '2h': { periods: 2, label: 'Half', short: 'H', plural: 'Halves' },
+        '1s': { periods: 1, label: 'Session', short: 'S', plural: 'Session' },
+    },
+    getFormatConfig() {
+        const fmt = this.match && this.match.matchFormat || '4q';
+        return this.FORMAT_CONFIG[fmt] || this.FORMAT_CONFIG['4q'];
+    },
+    getPeriodLabel(n) {
+        const cfg = this.getFormatConfig();
+        if (cfg.periods === 1) return cfg.label;
+        return `${cfg.short}${n}`;
+    },
     getStorageKey(type) {
         const prefix = this.clubId ? `ns_${this.clubId}` : 'netballstats';
         return `${prefix}_${type}`;
@@ -729,6 +745,7 @@ const App = {
         this.setupVenue = document.getElementById('setup-venue').value.trim();
         this.setupCompetition = document.getElementById('setup-competition').value.trim();
         this.setupQuarterLength = parseInt(document.getElementById('setup-quarter-length').value);
+        this.setupMatchFormat = document.getElementById('setup-match-format').value;
 
         // Auto-assign first 7 players to positions
         this.lineup = {};
@@ -812,6 +829,8 @@ const App = {
         }
 
         // Create match object
+        const fmt = this.setupMatchFormat || '4q';
+        const periods = (this.FORMAT_CONFIG[fmt] || this.FORMAT_CONFIG['4q']).periods;
         this.match = {
             id: Date.now(),
             date: this.setupDate,
@@ -820,12 +839,14 @@ const App = {
             homeTeam: this.setupTeamName,
             awayTeam: this.setupOpposition,
             quarterLength: this.setupQuarterLength,
+            matchFormat: fmt,
+            totalPeriods: periods,
             trackingLevel: this.trackingLevel,
             players: this.setupPlayers,
             homeScore: 0,
             awayScore: 0,
             quarter: 1,
-            quarterScores: [{ home: 0, away: 0 }, { home: 0, away: 0 }, { home: 0, away: 0 }, { home: 0, away: 0 }],
+            quarterScores: Array.from({ length: periods }, () => ({ home: 0, away: 0 })),
             // Current court: { pos: player }
             court: {},
             // Per-quarter lineups for court time tracking
@@ -873,8 +894,16 @@ const App = {
         this.renderCourtPlayers();
         this.cancelPlayerSelection();
 
+        // Set correct button text
+        const cfg = this.getFormatConfig();
+        if (cfg.periods === 1) {
+            document.getElementById('btn-quarter').textContent = 'Full Time';
+        } else {
+            document.getElementById('btn-quarter').textContent = cfg.periods === 2 ? 'Next Half' : 'Next Qtr';
+        }
+
         this.showView('view-match');
-        this.addSystemEvent('Match started - Q1');
+        this.addSystemEvent(`Match started - ${this.getPeriodLabel(1)}`);
     },
 
     // ==========================================
@@ -893,7 +922,7 @@ const App = {
     },
 
     updateQuarterDisplay() {
-        document.getElementById('match-quarter').textContent = `Q${this.match.quarter}`;
+        document.getElementById('match-quarter').textContent = this.getPeriodLabel(this.match.quarter);
     },
 
     toggleTimer() {
@@ -943,8 +972,9 @@ const App = {
     // QUARTER MANAGEMENT
     // ==========================================
     nextQuarter() {
-        if (this.match.quarter >= 4) {
-            this.showQuarterComment(4, () => this.endMatch());
+        const total = this.match.totalPeriods || 4;
+        if (this.match.quarter >= total) {
+            this.showQuarterComment(this.match.quarter, () => this.endMatch());
             return;
         }
         const fromQ = this.match.quarter;
@@ -956,16 +986,17 @@ const App = {
             this.updateTimerDisplay();
             this.updateQuarterDisplay();
             this.cancelPlayerSelection();
-            this.addSystemEvent(`Q${this.match.quarter} started`);
+            this.addSystemEvent(`${this.getPeriodLabel(this.match.quarter)} started`);
 
-            if (this.match.quarter >= 4) {
+            if (this.match.quarter >= total) {
                 document.getElementById('btn-quarter').textContent = 'Full Time';
             }
         });
     },
 
     showQuarterComment(quarter, callback) {
-        const label = quarter >= 4 ? 'Full Time' : `End Q${quarter}`;
+        const total = this.match.totalPeriods || 4;
+        const label = quarter >= total ? 'Full Time' : `End ${this.getPeriodLabel(quarter)}`;
         const dialog = document.getElementById('confirm-dialog');
         const msg = document.getElementById('confirm-message');
         msg.innerHTML = `<strong>${label}</strong><br>
@@ -1039,6 +1070,8 @@ const App = {
             events: this.match.events,
             trackingLevel: this.match.trackingLevel,
             quarterLength: this.match.quarterLength,
+            matchFormat: this.match.matchFormat || '4q',
+            totalPeriods: this.match.totalPeriods || 4,
         };
         this.matches.unshift(saved);
         this.saveMatches();
@@ -1296,8 +1329,12 @@ const App = {
             this.renderCourtPlayers();
             this.cancelPlayerSelection();
 
-            if (this.match.quarter >= 4) {
+            const total = this.match.totalPeriods || 4;
+            if (this.match.quarter >= total) {
                 document.getElementById('btn-quarter').textContent = 'Full Time';
+            } else {
+                const cfg = this.getFormatConfig();
+                document.getElementById('btn-quarter').textContent = cfg.periods === 2 ? 'Next Half' : cfg.periods === 1 ? 'Full Time' : 'Next Qtr';
             }
 
             // Resume timer if it was running
@@ -1680,9 +1717,12 @@ const App = {
     },
 
     renderQuarterSummary(m) {
+        const cfg = this.FORMAT_CONFIG[m.matchFormat] || this.FORMAT_CONFIG['4q'];
+        const periodLabel = (i) => cfg.periods === 1 ? cfg.label : `${cfg.short}${i + 1}`;
+
         const cards = m.quarterScores.map((qs, i) => `
             <div class="quarter-card">
-                <div class="qc-label">Q${i + 1}</div>
+                <div class="qc-label">${periodLabel(i)}</div>
                 <div class="qc-score">${qs.home} - ${qs.away}</div>
             </div>
         `).join('');
@@ -1692,7 +1732,7 @@ const App = {
         const running = m.quarterScores.map((qs, i) => {
             homeRun += qs.home;
             awayRun += qs.away;
-            return `<tr><td>After Q${i + 1}</td><td>${homeRun}</td><td>${awayRun}</td></tr>`;
+            return `<tr><td>After ${periodLabel(i)}</td><td>${homeRun}</td><td>${awayRun}</td></tr>`;
         }).join('');
 
         return `

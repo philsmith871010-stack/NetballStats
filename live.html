@@ -149,6 +149,17 @@
         });
     };
 
+    // Match format helpers
+    const FORMAT_CONFIG = {
+        '4q': { periods: 4, short: 'Q' },
+        '2h': { periods: 2, short: 'H' },
+        '1s': { periods: 1, short: 'S' },
+    };
+    function periodLabel(n, fmt) {
+        const cfg = FORMAT_CONFIG[fmt] || FORMAT_CONFIG['4q'];
+        return cfg.periods === 1 ? 'Session' : `${cfg.short}${n}`;
+    }
+
     // Full list of stats with labels + kind for color coding
     const STAT_DEFS = [
         { key: 'goal', label: 'Goals', kind: 'goal' },
@@ -232,7 +243,7 @@
         document.getElementById('lv-away-name').textContent = d.awayTeam || '';
         document.getElementById('lv-home-score').textContent = d.homeScore || 0;
         document.getElementById('lv-away-score').textContent = d.awayScore || 0;
-        document.getElementById('lv-quarter').textContent = `Q${d.quarter || 1}`;
+        document.getElementById('lv-quarter').textContent = periodLabel(d.quarter || 1, d.matchFormat);
 
         // Timer
         if (d.timerSeconds !== undefined && d.quarterLength) {
@@ -266,7 +277,7 @@
         if (d.quarterScores) {
             document.getElementById('lv-quarters').innerHTML = d.quarterScores
                 .map((qs, i) => `<div class="qs-card">
-                    <div class="qs-label">Q${i + 1}</div>
+                    <div class="qs-label">${periodLabel(i + 1, d.matchFormat)}</div>
                     <div class="qs-score">${qs.home} - ${qs.away}</div>
                 </div>`).join('');
         }
@@ -290,7 +301,7 @@
             feedEl.innerHTML = [...d.events].reverse().map(e => {
                 const ev = getEventDisplay(e);
                 return `<div class="feed-item ${ev.css}">
-                    <span class="feed-time">Q${e.quarter}</span>
+                    <span class="feed-time">${periodLabel(e.quarter, d.matchFormat)}</span>
                     <span class="feed-icon">${ev.icon}</span>
                     <span class="feed-text">${ev.text}</span>
                     <span class="feed-time">${e.time || ''}</span>
@@ -460,7 +471,7 @@
         // Quarter scores
         if (m.quarterScores) {
             html += `<div class="quarter-strip">${m.quarterScores.map((qs, i) =>
-                `<div class="qs-card"><div class="qs-label">Q${i+1}</div><div class="qs-score">${qs.home} - ${qs.away}</div></div>`
+                `<div class="qs-card"><div class="qs-label">${periodLabel(i+1, m.matchFormat)}</div><div class="qs-score">${qs.home} - ${qs.away}</div></div>`
             ).join('')}</div>`;
         }
 
@@ -497,7 +508,7 @@
             m.events.forEach(e => {
                 const ev = getEventDisplay(e);
                 html += `<div class="feed-item ${ev.css}">
-                    <span class="feed-time">Q${e.quarter}</span>
+                    <span class="feed-time">${periodLabel(e.quarter, m.matchFormat)}</span>
                     <span class="feed-icon">${ev.icon}</span>
                     <span class="feed-text">${ev.text}</span>
                     <span class="feed-time">${e.time || ''}</span>

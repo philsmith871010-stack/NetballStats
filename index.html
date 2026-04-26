@@ -277,21 +277,31 @@
                     <input type="text" id="setup-competition" class="input-large" placeholder="Optional">
                 </div>
             </div>
-            <div class="form-group">
-                <label>Quarter Length (minutes)</label>
-                <select id="setup-quarter-length" class="input-large">
-                    <option value="5">5 min</option>
-                    <option value="6">6 min</option>
-                    <option value="7">7 min</option>
-                    <option value="8">8 min</option>
-                    <option value="9">9 min</option>
-                    <option value="10">10 min</option>
-                    <option value="11">11 min</option>
-                    <option value="12">12 min</option>
-                    <option value="13">13 min</option>
-                    <option value="14">14 min</option>
-                    <option value="15" selected>15 min</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group flex-1">
+                    <label>Match Format</label>
+                    <select id="setup-match-format" class="input-large">
+                        <option value="4q" selected>4 Quarters</option>
+                        <option value="2h">2 Halves</option>
+                        <option value="1s">1 Session</option>
+                    </select>
+                </div>
+                <div class="form-group flex-1">
+                    <label>Period Length (minutes)</label>
+                    <select id="setup-quarter-length" class="input-large">
+                        <option value="5">5 min</option>
+                        <option value="6">6 min</option>
+                        <option value="7">7 min</option>
+                        <option value="8">8 min</option>
+                        <option value="9">9 min</option>
+                        <option value="10">10 min</option>
+                        <option value="11">11 min</option>
+                        <option value="12">12 min</option>
+                        <option value="13">13 min</option>
+                        <option value="14">14 min</option>
+                        <option value="15" selected>15 min</option>
+                    </select>
+                </div>
             </div>
         </div>
 
